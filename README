@@ -1,0 +1,104 @@
+== Description
+   Ruby extension for the Solaris kstat library.
+   
+== Prerequisites
+   Solaris 8 (2.8) or later.
+   Ruby 1.8.x
+
+== Installation
+=== Manual Installation
+   rake test (optional)
+   rake install
+
+=== Gem Installation
+   rake test (optional)
+   rake install_gem
+
+== Synopsis
+   require 'solaris/kstat'
+   require 'pp'
+   include Solaris
+
+   k = Kstat.new('cpu_info', 0, 'cpu_info0')
+   pp k
+
+   {'cpu_info'=>
+      {0=>
+      {'cpu_info0'=>
+         {'chip_id'=>0,
+          'fpu_type'=>'sparcv9',
+          'device_ID'=>0,
+          'cpu_type'=>'sparcv9',
+          'implementation'=>'Unknown',
+          'clock_MHz'=>502,
+          'state_begin'=>1105974702,
+          'state'=>'on-line'}}}}
+   
+== Class Methods
+Kstat.new(module=nil, instance=-1, name=nil)
+   Creates and returns a Kstat object. This does not traverse the kstat
+   chain. The Kstat#record method uses the values passed to actually
+   retrieve data.
+
+   You may specify a module, an instance and a name. The module defaults to
+   nil (all modules), the instance defaults to -1 (all instances) and the
+   name defaults to nil (all names).
+   
+== Instance Methods
+Kstat#record
+   Returns a nested hash based on the values passed to the constructor. How
+   deeply that hash is nested depends on the values passed to the constructor.
+   The more specific your criterion, the less data you will receive.
+
+== Error Classes
+Kstat::Error < StandardError
+   Raised if anything goes wrong. Typically this will only occur if you
+   pass bad arguments to the constructor e.g. a module name that doesn't
+   exist, etc.
+   
+== Unsupported names
+   The following names will not return any meaningful value:
+
+   * kstat_headers
+   * sfmmu_global_stat
+   * sfmmu_percpu_stat
+   
+== Known Bugs
+   You will receive a couple warnings during the build process. You
+   can ignore these.
+
+== Designer's Notes
+   I have noticed that results from the cpu_stat module differ from the output
+   of the 'kstat' command line tool. I am convinced that my code is correct and
+   that there is a bug in the Solaris::Kstat Perl module. Unfortunately, the
+   source for the version of the Solaris::Kstat Perl module that works on
+   Solaris 8 and later is not available (the version on CPAN only works on
+   Solaris 6 and 7).
+
+   See http://tinyurl.com/karxw for more details.
+   
+== Acknowledgements
+   Thanks go to Charlie Mills for help with the 'volatile' issue.
+
+== Future Plans
+   Eliminate warnings that occur during the build process, if possible.
+   
+== License
+   Ruby's
+
+== Copyright
+   (C) 2003-2008 Daniel J. Berger
+   All Rights Reserved
+    
+== Warranty
+   This package is provided "as is" and without any express or
+   implied warranties, including, without limitation, the implied
+   warranties of merchantability and fitness for a particular purpose.
+	 
+== Author
+   Daniel J. Berger
+   djberg96 at nospam at gmail dot com
+   imperator on IRC (freenode)
+    
+== See Also
+   kstat(1M)

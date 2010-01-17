@@ -1,0 +1,10 @@
+* CHANGES
+* MANIFEST
+* README
+* Rakefile
+* solaris-kstat.gemspec
+* examples/example_kstat.rb
+* ext/extconf.rb
+* ext/solaris/rkstat.c
+* ext/solaris/rkstat.h
+* test/test_solaris_kstat.rb
