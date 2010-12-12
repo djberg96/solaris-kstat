@@ -4,19 +4,15 @@ require 'rake/testtask'
 require 'rbconfig'
 include Config
 
-desc "Clean the build files for the solaris-kstat source"
-task :clean do
-  rm_rf('solaris') if File.exists?('solaris')
-
-  Dir['*.gem'].each{ |f| File.delete(f) }
-
-  Dir.chdir('ext') do
-    rm_rf('rkstat.c') if File.exists?('rkstat.c')
-    rm_rf('rkstat.h') if File.exists?('rkstat.h')
-    sh 'make distclean' if File.exists?('kstat.so')
-    rm_rf('solaris/kstat.so') if File.exists?('solaris/kstat.so')
-  end
-end
+CLEAN.include(
+  '**/*.gem',               # Gem files
+  '**/*.rbc',               # Rubinius
+  '**/*.o',                 # C object file
+  '**/*.log',               # Ruby extension build log
+  '**/Makefile',            # C Makefile
+  '**/conftest.dSYM',       # OS X build directory
+  "**/*.#{CONFIG['DLEXT']}" # C shared object
+)
 
 desc "Build the solaris-kstat source"
 task :build do
