@@ -20,8 +20,8 @@ static VALUE map_raw_mntinfo(kstat_t* ksp);
 
 // Structure wrapped as our Kstat class
 struct kstruct{
-   kstat_ctl_t* kc;
-   kstat_t* ksp;
+  kstat_ctl_t* kc;
+  kstat_t* ksp;
 };
 
 typedef struct kstruct KstatStruct;

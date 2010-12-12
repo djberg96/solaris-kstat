@@ -20,8 +20,8 @@ extern "C" {
 VALUE cKstatError;
 
 static VALUE ks_allocate(VALUE klass){
-   KstatStruct* ptr;
-   return Data_Make_Struct(klass, KstatStruct, 0, ks_free, ptr);
+  KstatStruct* ptr;
+  return Data_Make_Struct(klass, KstatStruct, 0, ks_free, ptr);
 }
 
 /*
@@ -37,36 +37,35 @@ static VALUE ks_allocate(VALUE klass){
  * name defaults to nil (all names).
  */
 VALUE ks_init(int argc, VALUE* argv, VALUE self){
-   KstatStruct* ptr;
-   VALUE v_module, v_instance, v_name;
+  KstatStruct* ptr;
+  VALUE v_module, v_instance, v_name;
 
-   Data_Get_Struct(self,KstatStruct,ptr);
+  Data_Get_Struct(self,KstatStruct,ptr);
 
-   rb_scan_args(argc, argv, "03", &v_module, &v_instance, &v_name);
+  rb_scan_args(argc, argv, "03", &v_module, &v_instance, &v_name);
 
+  if(!NIL_P(v_module)){
+    SafeStringValue(v_module);
+    rb_iv_set(self, "@module", v_module);
+  }
+  else{
+    rb_iv_set(self, "@module", Qnil);
+  }
 
-   if(!NIL_P(v_module)){
-      SafeStringValue(v_module);
-      rb_iv_set(self, "@module", v_module);
-   }
-   else{
-      rb_iv_set(self, "@module", Qnil);
-   }
+  if(!NIL_P(v_name)){
+    SafeStringValue(v_name);
+    rb_iv_set(self, "@name", v_name);
+  }
+  else{
+    rb_iv_set(self, "@name", Qnil);
+  }
 
-   if(!NIL_P(v_name)){
-      SafeStringValue(v_name);
-      rb_iv_set(self, "@name", v_name);
-   }
-   else{
-      rb_iv_set(self, "@name", Qnil);
-   }
+  if(!NIL_P(v_instance))
+    rb_iv_set(self, "@instance", v_instance);
+  else
+    rb_iv_set(self, "@instance", Qnil);
 
-   if(!NIL_P(v_instance))
-      rb_iv_set(self, "@instance", v_instance);
-   else
-      rb_iv_set(self, "@instance", Qnil);
-
-   return self;
+  return self;
 }
 
 /*
@@ -75,141 +74,141 @@ VALUE ks_init(int argc, VALUE* argv, VALUE self){
  * The more specific your criterion, the less data you will receive.
  */
 VALUE ks_record(VALUE self){
-   volatile VALUE v_m_hash, v_i_hash, v_n_hash, v_s_hash;
-   KstatStruct* ptr;
-   kstat_io_t kio;
-   kstat_timer_t kt;
+  volatile VALUE v_m_hash, v_i_hash, v_n_hash, v_s_hash;
+  KstatStruct* ptr;
+  kstat_io_t kio;
+  kstat_timer_t kt;
+  char* module;
+  char* name;
+  int instance = -1; // -1 represents all instances (the default)
 
-   char* module;
-   char* name;
-   int instance = -1; /* -1 represents all instances (the default) */
+  VALUE v_module, v_instance, v_name;
 
-   VALUE v_module, v_instance, v_name;
+  Data_Get_Struct(self,KstatStruct,ptr);
 
-   Data_Get_Struct(self,KstatStruct,ptr);
+  v_m_hash = rb_hash_new(); // Module name is key, holds v_i_hashes
+  v_i_hash = rb_hash_new(); // Instance name is key, holds v_n_hashes
+  v_n_hash = rb_hash_new(); // Name is key, holds v_s_hashes
 
-   v_m_hash = rb_hash_new(); /* Module name is key, holds v_i_hashes   */
-   v_i_hash = rb_hash_new(); /* Instance name is key, holds v_n_hashes */
-   v_n_hash = rb_hash_new(); /* Name is key, holds v_s_hashes          */
+  v_module   = rb_iv_get(self, "@module");
+  v_instance = rb_iv_get(self, "@instance");
+  v_name     = rb_iv_get(self, "@name");
 
-   v_module   = rb_iv_get(self, "@module");
-   v_instance = rb_iv_get(self, "@instance");
-   v_name     = rb_iv_get(self, "@name");
+  // Module is NULL by default (i.e. all modules are returned)
+  if(NIL_P(v_module))
+    module = NULL;
+  else
+    module = StringValuePtr(v_module);
 
-   /* Module is NULL by default (i.e. all modules are returned) */
-   if(NIL_P(v_module))
-      module = NULL;
-   else
-      module = StringValuePtr(v_module);
+  // Instance defaults to -1 (i.e. all instances are returned)
+  if(!NIL_P(v_instance))
+    instance = NUM2INT(v_instance);
 
-   /* Instance defaults to -1 (i.e. all instances are returned) */
-   if(!NIL_P(v_instance))
-      instance = NUM2INT(v_instance);
+  // Name is NULL by default (i.e. all names are returned)
+  if(NIL_P(v_name))
+    name = NULL;
+  else
+    name = StringValuePtr(v_name);
 
-   /* Name is NULL by default (i.e. all names are returned) */
-   if(NIL_P(v_name))
-      name = NULL;
-   else
-      name = StringValuePtr(v_name);
+  // A failure probably means the module, instance or name doesn't exist
+  if((ptr->kc = kstat_open()) == NULL)
+    rb_raise(cKstatError, "kstat_open() failure: %s", strerror(errno));
 
-   /* A failure probably means the module, instance or name doesn't exist */
-   if((ptr->kc = kstat_open()) == NULL)
-      rb_raise(cKstatError,"kstat_open() failure: %s", strerror(errno));
+  /*
+   * Traverse the kstat chain, looking for matches based on supplied data.
+   * A failure likely means a non-existant module or name was provided.
+   */
+  if((ptr->ksp = kstat_lookup(ptr->kc, module, instance, name)) == NULL)
+    rb_raise(cKstatError, "kstat_lookup() failure: %s", strerror(errno));
 
-   /*
-    * Traverse the kstat chain, looking for matches based on supplied data.
-    * A failure likely means a non-existant module or name was provided.
-    */
-   if((ptr->ksp = kstat_lookup(ptr->kc, module, instance, name)) == NULL)
-      rb_raise(cKstatError,"kstat_lookup() failure: %s", strerror(errno));
+  // Sync the chain with the kernel
+  if(kstat_chain_update(ptr->kc) == -1)
+    rb_raise(cKstatError, "kstat_chain_update() failure: %s", strerror(errno));
 
-   /* Sync the chain with the kernel */
-   kstat_chain_update(ptr->kc);
-
-   while(ptr->ksp){
-
-      /* If a module is specified, ignore modules that don't match */
-      if( (module) && (strcmp(module,ptr->ksp->ks_module)) ){
-         ptr->ksp = ptr->ksp->ks_next;
-         continue;
-      }
-
-      /* If an instance is specified, ignore instances that don't match */
-      if( (instance != -1) && (instance != ptr->ksp->ks_instance) ){
-         ptr->ksp = ptr->ksp->ks_next;
-         continue;
-      }
-
-      /* If a name is specified, ignore names that don't match */
-      if( (name) && (strcmp(name,ptr->ksp->ks_name)) ){
-         ptr->ksp = ptr->ksp->ks_next;
-         continue;
-      }
-
-      /* Call the appropriate data mapper based on ks_type */
-      switch(ptr->ksp->ks_type){
-         case KSTAT_TYPE_NAMED:
-            kstat_read(ptr->kc, ptr->ksp, NULL);
-            v_s_hash = map_named_data_type(ptr->ksp);
-            break;
-         case KSTAT_TYPE_IO:
-            kstat_read(ptr->kc, ptr->ksp, &kio);
-            v_s_hash = map_io_data_type(&kio);
-            break;
-         case KSTAT_TYPE_TIMER:
-            kstat_read(ptr->kc, ptr->ksp, &kt);
-            v_s_hash = map_timer_data_type(&kt);
-         case KSTAT_TYPE_INTR:
-            kstat_read(ptr->kc, ptr->ksp, NULL);
-            v_s_hash = map_intr_data_type(ptr->ksp);
-            break;
-         case KSTAT_TYPE_RAW:
-            kstat_read(ptr->kc, ptr->ksp, NULL);
-            v_s_hash = map_raw_data_type(ptr->ksp);   
-            break;
-         default:
-            rb_raise(cKstatError,"Unknown data record type");
-      }
-
-      rb_hash_aset(v_n_hash, rb_str_new2(ptr->ksp->ks_name), v_s_hash);
-      rb_hash_aset(v_i_hash, INT2FIX(ptr->ksp->ks_instance),  v_n_hash);
-      rb_hash_aset(v_m_hash, rb_str_new2(ptr->ksp->ks_module), v_i_hash);
-
+  while(ptr->ksp){
+    // If a module is specified, ignore modules that don't match
+    if((module) && (strcmp(module,ptr->ksp->ks_module))){
       ptr->ksp = ptr->ksp->ks_next;
-   }
+      continue;
+    }
 
-   return v_m_hash;
+    // If an instance is specified, ignore instances that don't match
+    if((instance != -1) && (instance != ptr->ksp->ks_instance)){
+      ptr->ksp = ptr->ksp->ks_next;
+      continue;
+    }
+
+    // If a name is specified, ignore names that don't match
+    if((name) && (strcmp(name,ptr->ksp->ks_name))){
+      ptr->ksp = ptr->ksp->ks_next;
+      continue;
+    }
+
+    // Call the appropriate data mapper based on ks_type
+    switch(ptr->ksp->ks_type){
+      case KSTAT_TYPE_NAMED:
+        kstat_read(ptr->kc, ptr->ksp, NULL);
+        v_s_hash = map_named_data_type(ptr->ksp);
+        break;
+      case KSTAT_TYPE_IO:
+        kstat_read(ptr->kc, ptr->ksp, &kio);
+        v_s_hash = map_io_data_type(&kio);
+        break;
+      case KSTAT_TYPE_TIMER:
+        kstat_read(ptr->kc, ptr->ksp, &kt);
+        v_s_hash = map_timer_data_type(&kt);
+      case KSTAT_TYPE_INTR:
+        kstat_read(ptr->kc, ptr->ksp, NULL);
+        v_s_hash = map_intr_data_type(ptr->ksp);
+        break;
+      case KSTAT_TYPE_RAW:
+        kstat_read(ptr->kc, ptr->ksp, NULL);
+        v_s_hash = map_raw_data_type(ptr->ksp);   
+        break;
+      default:
+        rb_raise(cKstatError,"Unknown data record type");
+    }
+
+    rb_hash_aset(v_n_hash, rb_str_new2(ptr->ksp->ks_name), v_s_hash);
+    rb_hash_aset(v_i_hash, INT2FIX(ptr->ksp->ks_instance),  v_n_hash);
+    rb_hash_aset(v_m_hash, rb_str_new2(ptr->ksp->ks_module), v_i_hash);
+
+    ptr->ksp = ptr->ksp->ks_next;
+  }
+
+  return v_m_hash;
 }
 
 void Init_kstat(){
-   VALUE mSolaris, cKstat;
+  VALUE mSolaris, cKstat;
 
-   /* The Solaris module only serves as a toplevel namespace */
-   mSolaris = rb_define_module("Solaris");
+  /* The Solaris module only serves as a toplevel namespace */
+  mSolaris = rb_define_module("Solaris");
 
-   /* The Kstat class encapsulates kstat (kernel statistics) information */
-   cKstat  = rb_define_class_under(mSolaris, "Kstat", rb_cObject);
+  /* The Kstat class encapsulates kstat (kernel statistics) information */
+  cKstat = rb_define_class_under(mSolaris, "Kstat", rb_cObject);
 
-   /* The Kstat::Error class is raised if any of the Kstat methods fail */
-   cKstatError = rb_define_class_under(cKstat, "Error", rb_eStandardError);
+  /* The Kstat::Error class is raised if any of the Kstat methods fail */
+  cKstatError = rb_define_class_under(cKstat, "Error", rb_eStandardError);
 
-   rb_define_alloc_func(cKstat, ks_allocate);
+  rb_define_alloc_func(cKstat, ks_allocate);
 
-   /* Instance Methods */
-   rb_define_method(cKstat, "initialize", ks_init, -1);
-   rb_define_method(cKstat, "record", ks_record, 0);
+  // Instance Methods
 
-   /* Kernel module */
-   rb_define_attr(cKstat, "module", 1, 1);
+  rb_define_method(cKstat, "initialize", ks_init, -1);
+  rb_define_method(cKstat, "record", ks_record, 0);
 
-   /* Index of module entity */
-   rb_define_attr(cKstat, "instance", 1, 1);
+  // Kernel module
+  rb_define_attr(cKstat, "module", 1, 1);
 
-   /* Unique name within module */
-   rb_define_attr(cKstat, "name", 1, 1);
+  // Index of module entity
+  rb_define_attr(cKstat, "instance", 1, 1);
 
-   /* 1.0.1: The version of the solaris-kstat library */
-   rb_define_const(cKstat, "VERSION", rb_str_new2(SOLARIS_KSTAT_VERSION));
+  // Unique name within module
+  rb_define_attr(cKstat, "name", 1, 1);
+
+  /* 1.0.2: The version of the solaris-kstat library */
+  rb_define_const(cKstat, "VERSION", rb_str_new2(SOLARIS_KSTAT_VERSION));
 }
 
 #ifdef __cplusplus
