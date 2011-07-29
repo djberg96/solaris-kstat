@@ -14,35 +14,35 @@ include Solaris
 
 class TC_Solaris_Kstat < Test::Unit::TestCase
   def setup
-    @k = Kstat.new
+    @kstat = Kstat.new
   end
 
   def test_version
-    assert_equal('1.1.0', Kstat::VERSION)
+    assert_equal('1.0.2', Kstat::VERSION)
   end
 
   def test_name
-    assert_respond_to(@k, :name)
-    assert_respond_to(@k, :name=)
-    assert_nil(@k.name)
-    assert_nothing_raised{ @k.name }
-    assert_nothing_raised{ @k.name = 'foo' }
+    assert_respond_to(@kstat, :name)
+    assert_respond_to(@kstat, :name=)
+    assert_nil(@kstat.name)
+    assert_nothing_raised{ @kstat.name }
+    assert_nothing_raised{ @kstat.name = 'foo' }
   end
 
   def test_module
-    assert_respond_to(@k, :module)
-    assert_respond_to(@k, :module=)
-    assert_nil(@k.module)
-    assert_nothing_raised{ @k.module }
-    assert_nothing_raised{ @k.module = 'bar' }
+    assert_respond_to(@kstat, :module)
+    assert_respond_to(@kstat, :module=)
+    assert_nil(@kstat.module)
+    assert_nothing_raised{ @kstat.module }
+    assert_nothing_raised{ @kstat.module = 'bar' }
   end
 
   def test_instance
-    assert_respond_to(@k, :instance)
-    assert_respond_to(@k, :instance=)
-    assert_nil(@k.instance)
-    assert_nothing_raised{ @k.instance }
-    assert_nothing_raised{ @k.instance = 0 }
+    assert_respond_to(@kstat, :instance)
+    assert_respond_to(@kstat, :instance=)
+    assert_nil(@kstat.instance)
+    assert_nothing_raised{ @kstat.instance }
+    assert_nothing_raised{ @kstat.instance = 0 }
   end
 
   def test_constructor_valid_values
@@ -59,30 +59,30 @@ class TC_Solaris_Kstat < Test::Unit::TestCase
   end
 
   def test_record_basic
-    assert_respond_to(@k, :record)
+    assert_respond_to(@kstat, :record)
   end
 
   def test_record_named
-    assert_nothing_raised{ @k.record['cpu_info'][0]['cpu_info0'] }
-    assert_kind_of(Hash, @k.record['cpu_info'][0]['cpu_info0'])
+    assert_nothing_raised{ @kstat.record['cpu_info'][0]['cpu_info0'] }
+    assert_kind_of(Hash, @kstat.record['cpu_info'][0]['cpu_info0'])
   end
 
   def test_record_io
-    assert_nothing_raised{ @k.record['nfs'][1]['nfs1'] }
-    assert_kind_of(Hash, @k.record['nfs'][1]['nfs1'])
+    assert_nothing_raised{ @kstat.record['nfs'][1]['nfs1'] }
+    assert_kind_of(Hash, @kstat.record['nfs'][1]['nfs1'])
   end
 
   def test_record_intr
-    assert_nothing_raised{ @k.record['fd'][0]['fd0'] }
-    assert_kind_of(Hash, @k.record['fd'][0]['fd0'])
+    assert_nothing_raised{ @kstat.record['fd'][0]['fd0'] }
+    assert_kind_of(Hash, @kstat.record['fd'][0]['fd0'])
   end
 
   def test_record_raw_vminfo
     keys = %w/class freemem swap_alloc swap_avail swap_free swap_resv/
 
-    assert_nothing_raised{ @k.record['unix'][0]['vminfo'] }
-    assert_kind_of(Hash, @k.record['unix'][0]['vminfo'])
-    assert_equal(keys, @k.record['unix'][0]['vminfo'].keys.sort)
+    assert_nothing_raised{ @kstat.record['unix'][0]['vminfo'] }
+    assert_kind_of(Hash, @kstat.record['unix'][0]['vminfo'])
+    assert_equal(keys, @kstat.record['unix'][0]['vminfo'].keys.sort)
   end
 
   def test_record_raw_var
@@ -92,9 +92,9 @@ class TC_Solaris_Kstat < Test::Unit::TestCase
       v_proc v_sptmap
     /
 
-    assert_nothing_raised{ @k.record['unix'][0]['var'] }
-    assert_kind_of(Hash, @k.record['unix'][0]['var'])
-    assert_equal(keys,  @k.record['unix'][0]['var'].keys.sort)
+    assert_nothing_raised{ @kstat.record['unix'][0]['var'] }
+    assert_kind_of(Hash, @kstat.record['unix'][0]['var'])
+    assert_equal(keys,  @kstat.record['unix'][0]['var'].keys.sort)
   end
 
   def test_record_raw_biostats
@@ -108,9 +108,9 @@ class TC_Solaris_Kstat < Test::Unit::TestCase
       waits_for_buffer_allocs
     /
 
-    assert_nothing_raised{ @k.record['unix'][0]['biostats'] }
-    assert_kind_of([Hash, NilClass], @k.record['unix'][0]['biostats'])
-    assert_equal(keys,  @k.record['unix'][0]['biostats'].keys.sort)
+    assert_nothing_raised{ @kstat.record['unix'][0]['biostats'] }
+    assert_kind_of([Hash, NilClass], @kstat.record['unix'][0]['biostats'])
+    assert_equal(keys,  @kstat.record['unix'][0]['biostats'].keys.sort)
   end
 
   def test_record_raw_cpu_stat
@@ -125,12 +125,12 @@ class TC_Solaris_Kstat < Test::Unit::TestCase
       rw_wrfails modload modunload bawrite
     /
 
-    assert_nothing_raised{ @k.record['cpu_stat'][0]['cpu_stat0'] }
-    assert_kind_of(Hash, @k.record['cpu_stat'][0]['cpu_stat0'])
+    assert_nothing_raised{ @kstat.record['cpu_stat'][0]['cpu_stat0'] }
+    assert_kind_of(Hash, @kstat.record['cpu_stat'][0]['cpu_stat0'])
 
     # Too big and difficult to sort manually - so use a Set
     set1 = Set.new(keys)
-    set2 = Set.new(@k.record['cpu_stat'][0]['cpu_stat0'].keys)
+    set2 = Set.new(@kstat.record['cpu_stat'][0]['cpu_stat0'].keys)
     diff = set1 - set2
 
     assert_equal(set1,set2,'Diff was: #{diff.to_a}')
@@ -148,24 +148,24 @@ class TC_Solaris_Kstat < Test::Unit::TestCase
       purges
     /
 
-    assert_nothing_raised{ @k.record['unix'][0]['ncstats'] }
-    assert_kind_of(Hash, @k.record['unix'][0]['ncstats'])
-    assert_equal(keys, @k.record['unix'][0]['ncstats'].keys.sort)
+    assert_nothing_raised{ @kstat.record['unix'][0]['ncstats'] }
+    assert_kind_of(Hash, @kstat.record['unix'][0]['ncstats'])
+    assert_equal(keys, @kstat.record['unix'][0]['ncstats'].keys.sort)
   end
 
   def test_record_sysinfo
     keys = %w/class runocc runque swpocc swpque updates waiting/
 
-    assert_nothing_raised{ @k.record['unix'][0]['sysinfo'] }
-    assert_kind_of(Hash, @k.record['unix'][0]['sysinfo'])
-    assert_equal(keys, @k.record['unix'][0]['sysinfo'].keys.sort)
+    assert_nothing_raised{ @kstat.record['unix'][0]['sysinfo'] }
+    assert_kind_of(Hash, @kstat.record['unix'][0]['sysinfo'])
+    assert_equal(keys, @kstat.record['unix'][0]['sysinfo'].keys.sort)
   end
 
   def test_class_set
-    assert_equal("misc", @k.record['unix'][0]['sysinfo']['class'])
+    assert_equal("misc", @kstat.record['unix'][0]['sysinfo']['class'])
   end
 
   def teardown
-    @k = nil
+    @kstat = nil
   end
 end
