@@ -1,18 +1,11 @@
 == Description
-   Ruby extension for the Solaris kstat library.
+   A Ruby interface for the Solaris kstat library.
    
 == Prerequisites
-   Solaris 8 (2.8) or later.
-   Ruby 1.8.x
+   Solaris 8 (SunOS 2.8) or later.
 
 == Installation
-=== Manual Installation
-   rake test (optional)
-   rake install
-
-=== Gem Installation
-   rake test (optional)
-   rake install_gem
+   gem install solaris-kstat
 
 == Synopsis
    require 'solaris/kstat'
@@ -20,7 +13,7 @@
    include Solaris
 
    k = Kstat.new('cpu_info', 0, 'cpu_info0')
-   pp k
+   pp k.record
 
    {'cpu_info'=>
       {0=>
@@ -64,7 +57,7 @@ Kstat::Error < StandardError
    * sfmmu_percpu_stat
    
 == Known Bugs
-   You will receive a couple warnings during the build process. You
+   You may receive a couple warnings during the build process. You
    can ignore these.
 
 == Designer's Notes
@@ -81,13 +74,13 @@ Kstat::Error < StandardError
    Thanks go to Charlie Mills for help with the 'volatile' issue.
 
 == Future Plans
-   Eliminate warnings that occur during the build process, if possible.
+   Add snaptime and crtime information to the statistics hash.
    
 == License
-   Ruby's
+   Artistic 2.0
 
 == Copyright
-   (C) 2003-2008 Daniel J. Berger
+   (C) 2003-2011 Daniel J. Berger
    All Rights Reserved
     
 == Warranty
@@ -97,8 +90,6 @@ Kstat::Error < StandardError
 	 
 == Author
    Daniel J. Berger
-   djberg96 at nospam at gmail dot com
-   imperator on IRC (freenode)
     
 == See Also
    kstat(1M)

@@ -69,6 +69,24 @@ VALUE ks_init(int argc, VALUE* argv, VALUE self){
 }
 
 /*
+ * Helper function ks_record which will either return an existing value for
+ * the given key, or assign that key a new empty hash if it has no value
+ * associated with it.
+ */
+VALUE get_hash_for_key(VALUE v_hash, VALUE v_key){
+  volatile VALUE v_new_hash;
+
+  v_new_hash = rb_hash_aref(v_hash, v_key);
+
+  if(NIL_P(v_new_hash)){
+    v_new_hash = rb_hash_new();
+    rb_hash_aset(v_hash, v_key, v_new_hash);    
+  }
+
+  return v_new_hash;
+}
+
+/*
  * Returns a nested hash based on the values passed to the constructor.  How
  * deeply that hash is nested depends on the values passed to the constructor.
  * The more specific your criterion, the less data you will receive.
@@ -87,8 +105,6 @@ VALUE ks_record(VALUE self){
   Data_Get_Struct(self,KstatStruct,ptr);
 
   v_m_hash = rb_hash_new(); // Module name is key, holds v_i_hashes
-  v_i_hash = rb_hash_new(); // Instance name is key, holds v_n_hashes
-  v_n_hash = rb_hash_new(); // Name is key, holds v_s_hashes
 
   v_module   = rb_iv_get(self, "@module");
   v_instance = rb_iv_get(self, "@instance");
@@ -168,6 +184,13 @@ VALUE ks_record(VALUE self){
       default:
         rb_raise(cKstatError,"Unknown data record type");
     }
+
+    /* Set the class for this set of statistics */
+    if(ptr->ksp->ks_class)
+      rb_hash_aset(v_s_hash, rb_str_new2("class"), rb_str_new2(ptr->ksp->ks_class));
+
+    v_i_hash = get_hash_for_key(v_m_hash, rb_str_new2(ptr->ksp->ks_module));
+    v_n_hash = get_hash_for_key(v_i_hash, INT2FIX(ptr->ksp->ks_instance));
 
     rb_hash_aset(v_n_hash, rb_str_new2(ptr->ksp->ks_name), v_s_hash);
     rb_hash_aset(v_i_hash, INT2FIX(ptr->ksp->ks_instance),  v_n_hash);

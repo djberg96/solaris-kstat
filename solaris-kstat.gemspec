@@ -23,7 +23,8 @@ Gem::Specification.new do |spec|
 
   spec.description = <<-EOF
     The solaris-kstat library provides a Ruby interface for gathering kernel
-    statistics from the operating system. Each matching statistic is provided
-    with its module, instance, and name fields, as well as its actual value.
+    statistics from the Solaris operating system. Each matching statistic is
+    provided with its module, instance, and name fields, as well as its actual
+    value.
   EOF
 end

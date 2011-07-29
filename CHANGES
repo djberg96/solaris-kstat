@@ -1,10 +1,15 @@
-== 1.0.2 - ???
+== 1.0.2 - 29-Jul-2011
+* Fixed a bug where the name hash keys could potentially be overwritten if there
+  were multiple statistics for the same name. Thanks go to Jens Deppe for the
+  spot and the patch.
+* Added the "class" information to the statistics hash.
 * Rakefile refactored. The old style of library installation has been removed.
   Use the 'gem' tasks now. In addition, gem creation is now handled via a Rake
   task now.
 * Some minor modifications to the gemspec to reflect the changes in the
   Rakefile, as well as a change required due to the switch from CVS to git.
 * Added a .gitignore file.
+* Changed license to Artistic 2.0.
 
 == 1.0.1 - 27-Aug-2009
 * Changed the license to Artistic 2.0.
