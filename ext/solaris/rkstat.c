@@ -173,6 +173,7 @@ VALUE ks_record(VALUE self){
       case KSTAT_TYPE_TIMER:
         kstat_read(ptr->kc, ptr->ksp, &kt);
         v_s_hash = map_timer_data_type(&kt);
+        break;
       case KSTAT_TYPE_INTR:
         kstat_read(ptr->kc, ptr->ksp, NULL);
         v_s_hash = map_intr_data_type(ptr->ksp);
@@ -230,7 +231,7 @@ void Init_kstat(){
   // Unique name within module
   rb_define_attr(cKstat, "name", 1, 1);
 
-  /* 1.0.2: The version of the solaris-kstat library */
+  /* 1.0.3: The version of the solaris-kstat library */
   rb_define_const(cKstat, "VERSION", rb_str_new2(SOLARIS_KSTAT_VERSION));
 }
 

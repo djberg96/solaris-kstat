@@ -18,7 +18,7 @@ class TC_Solaris_Kstat < Test::Unit::TestCase
   end
 
   def test_version
-    assert_equal('1.0.2', Kstat::VERSION)
+    assert_equal('1.0.3', Kstat::VERSION)
   end
 
   def test_name

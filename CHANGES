@@ -1,5 +1,6 @@
 == 1.0.3 - ???
 * Added test-unit as a development dependency.
+* Fixed a switch statement bug (missing break).
 
 == 1.0.2 - 29-Jul-2011
 * Fixed a bug where the name hash keys could potentially be overwritten if there

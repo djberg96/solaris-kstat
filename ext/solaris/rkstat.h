@@ -2,7 +2,7 @@
 extern "C" {
 #endif
 
-#define SOLARIS_KSTAT_VERSION "1.0.2"
+#define SOLARIS_KSTAT_VERSION "1.0.3"
 
 // Function prototypes
 static VALUE map_named_data_type(kstat_t* ksp);
