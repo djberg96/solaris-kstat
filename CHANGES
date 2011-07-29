@@ -1,3 +1,6 @@
+== 1.0.3 - ???
+* Added test-unit as a development dependency.
+
 == 1.0.2 - 29-Jul-2011
 * Fixed a bug where the name hash keys could potentially be overwritten if there
   were multiple statistics for the same name. Thanks go to Jens Deppe for the
