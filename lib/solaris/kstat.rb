@@ -15,9 +15,10 @@ module Solaris
       )
     end
 
+    # Size should be 152
     class Kstat < FFI::Struct
       layout(
-        :ks_crtime, :ulong,
+        :ks_crtime, :long_long,
         :ks_next, :pointer,
         :ks_kid, :int,
         :ks_module, [:char, KSTAT_STRLEN],
@@ -30,7 +31,11 @@ module Solaris
         :ks_data, :pointer,
         :ks_ndata, :uint,
         :ks_data_size, :ulong,
-        :ks_snaptime, :ulong
+        :ks_snaptime, :long_long,
+        :ks_update, :int,
+        :ks_private, :pointer,
+        :ks_snapshot, :int,
+        :ks_lock, :pointer,
       )
     end
 
