@@ -5,8 +5,39 @@ module Solaris
     extend FFI::Library
     ffi_lib 'kstat'
 
+    KSTAT_STRLEN = 31
+
+    class KstatCtl < FFI::Struct
+      layout(
+        :kc_chain_id, :int,
+        :kc_chain, :pointer,
+        :kc_kd, :int
+      )
+    end
+
+    class Kstat < FFI::Struct
+      layout(
+        :ks_crtime, :ulong,
+        :ks_next, :pointer,
+        :ks_kid, :int,
+        :ks_module, [:char, KSTAT_STRLEN],
+        :ks_resv, :uchar,
+        :ks_instance, :int,
+        :ks_name, [:char, KSTAT_STRLEN],
+        :ks_type, :uchar,
+        :ks_class, [:char, KSTAT_STRLEN],
+        :ks_flags, :uchar,
+        :ks_data, :pointer,
+        :ks_ndata, :uint,
+        :ks_data_size, :ulong,
+        :ks_snaptime, :ulong
+      )
+    end
+
     attach_function :kstat_open, [], :pointer
     attach_function :kstat_close, [:pointer], :int
+    attach_function :kstat_lookup, [:pointer, :string, :int, :string], :pointer
+    attach_function :kstat_chain_update, [:pointer], :int
 
     attr_reader :module
     attr_reader :instance
@@ -25,6 +56,17 @@ module Solaris
         raise SystemCallError.new('kstat_open', FFI.errno)
       end
 
+      kstat = kstat_lookup(kptr, @module, @instance, @name)
+
+      if kstat.null?
+        raise SystemCallError.new('kstat_lookup', FFI.errno)
+      end
+
+      # Sync the chain with the kernel
+      if kstat_chain_update(kptr) < 0
+        raise SystemCallError.new('kstat_chain_update', FFI.errno)
+      end
+
       begin
       ensure
         kstat_close(kptr)
@@ -33,4 +75,4 @@ module Solaris
   end
 end
 
-Solaris::Kstat.new.record
+Solaris::Kstat.new('cpu_info', 0).record
