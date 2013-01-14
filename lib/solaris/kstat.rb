@@ -63,6 +63,7 @@ module Solaris
               #map_raw_data_type
               puts "raw"
             when 1 # KS_TYPE_NAMED
+              p kstat[:ks_name]
               map_named_data_type(kstat)
               #puts "named"
             when 2 # KS_TYPE_INTR
@@ -86,25 +87,29 @@ module Solaris
     end # record
 
     def map_named_data_type(kstat)
-      knp = KstatNamed.new(kstat[:ks_data])
-      p kstat[:ks_data]
+      num  = kstat[:ks_ndata]
+      hash = {}
 
-      0.upto(kstat[:ks_ndata]){ |i|
+      0.upto(num){ |i|
+        knp = KstatNamed.new(kstat[:ks_data] + (i * KstatNamed.size))
+
         case knp[:data_type]
           when 0 # KSTAT_DATA_CHAR
-            p knp[:name]
-            p knp[:value][:c]
+            hash[knp[:name]] = knp[:value][:c]
           when 1 # KSTAT_DATA_INT32
+            hash[knp[:name]] = knp[:value][:i32]
           when 2 # KSTAT_DATA_UINT32
+            hash[knp[:name]] = knp[:value][:ui32]
           when 3 # KSTAT_DATA_INT64
+            hash[knp[:name]] = knp[:value][:i64]
           when 4 # KSTAT_DATA_UINT64
+            hash[knp[:name]] = knp[:value][:ui64]
           else
             "unknown"
         end
-
-        # TODO: Doesn't seem to work right.
-        knp = KstatNamed.new(kstat[:ks_data] + (i * KstatNamed.size))
       }
+
+      hash
     end
   end # Kstat
 end # Solaris
