@@ -1,46 +1,11 @@
-require 'ffi'
+require File.join(File.dirname(__FILE__), 'kstat', 'structs')
+require File.join(File.dirname(__FILE__), 'kstat', 'functions')
 
 module Solaris
   class Kstat
     extend FFI::Library
-    ffi_lib :kstat
-
-    class KstatCtl < FFI::Struct
-      layout(
-        :kc_chain_id, :int,
-        :kc_chain, :pointer,
-        :kc_kd, :int
-      )
-    end
-
-    class KstatStruct < FFI::Struct
-      layout(
-        :ks_crtime, :long_long,
-        :ks_next, :pointer,
-        :ks_kid, :int,
-        :ks_module, [:char, 31],
-        :ks_resv, :uchar,
-        :ks_instance, :int,
-        :ks_name, [:char, 31],
-        :ks_type, :uchar,
-        :ks_class, [:char, 31],
-        :ks_flags, :uchar,
-        :ks_data, :pointer,
-        :ks_ndata, :uint,
-        :ks_data_size, :ulong,
-        :ks_snaptime, :long_long,
-        :ks_update, :int,
-        :ks_private, :pointer,
-        :ks_snapshot, :int,
-        :ks_lock, :pointer,
-      )
-    end
-
-    attach_function :kstat_chain_update, [:pointer], :int
-    attach_function :kstat_close, [:pointer], :int
-    attach_function :kstat_lookup, [:pointer, :string, :int, :string], :pointer
-    attach_function :kstat_open, [], :pointer
-    attach_function :kstat_read, [KstatCtl, KstatStruct, :pointer], :int
+    include Solaris::Structs
+    include Solaris::Functions
 
     attr_reader :module
     attr_reader :instance
@@ -68,7 +33,6 @@ module Solaris
       kstat = KstatStruct.new(ptr)
 
       begin
-
         # Sync the chain with the kernel
         if kstat_chain_update(kptr) < 0
           raise SystemCallError.new('kstat_chain_update', FFI.errno)
@@ -90,21 +54,53 @@ module Solaris
             next
           end
 
-          #case kstat[:ks_type]
-          #  when KS_TYPE_NAMED
-          #  when KS_TYPE_IO
-          #  when KS_TYPE_TIMER
-          #  when KS_TYPE_INTR
-          #  when KS_TYPE_RAW
-          #end
+          if kstat_read(kptr, kstat, nil) < 0
+            raise SystemCallError.new('kstat_read', FFI.errno)
+          end
+
+          case kstat[:ks_type]
+            when 0 # KSTAT_TYPE_RAW
+              #map_raw_data_type
+              puts "raw"
+            when 1 # KS_TYPE_NAMED
+              map_named_data_type(kstat)
+            when 2 # KS_TYPE_INTR
+              #map_intr_data_type
+              puts "intr"
+            when 3 # KS_TYPE_IO
+              #map_io_data_type
+              puts "io"
+            when 4 # KS_TYPE_TIMER
+              #map_timer_data_type
+              puts "timer"
+            else
+              raise ArgumentError, 'unknown data record type'
+          end
 
           kstat = KstatStruct.new(kstat[:ks_next])
         end
       ensure
         kstat_close(kptr)
       end
+    end # record
+
+    def map_named_data_type(kstat)
+      knp = KstatNamed.new(kstat[:ks_data])
+
+      0.upto(kstat[:ks_ndata]){ |i|
+        case knp[:data_type]
+          when 0 # KSTAT_DATA_CHAR
+            p knp[:name]
+          when 1 # KSTAT_DATA_INT32
+          when 2 # KSTAT_DATA_UINT32
+          when 3 # KSTAT_DATA_INT64
+          when 4 # KSTAT_DATA_UINT64
+          else
+            "unknown"
+        end
+      }
     end
-  end
-end
+  end # Kstat
+end # Solaris
 
 Solaris::Kstat.new('cpu_info', 0).record
