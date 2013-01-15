@@ -137,5 +137,39 @@ module Solaris
         :v_bufhwm,    :int
       )
     end
+
+    class KstatIntr < FFI::Struct
+      layout(:intrs, [:uint, 5])
+    end
+
+    class KstatIo < FFI::Struct
+      layout(
+        :nread, :ulong_long,
+        :nwritten, :ulong_long,
+        :reads, :uint,
+        :writes, :uint,
+        :wtime, :long_long,
+        :wlentime, :long_long,
+        :wlastupdate, :long_long,
+        :rtime, :long_long,
+        :rlentime, :long_long,
+        :rlastupdate, :long_long,
+        :wcnt, :uint,
+        :rcnt, :uint
+      )
+    end
+
+    class KstatTimer < FFI::Struct
+      layout(
+        :name, [:char, 31],
+        :resv, :uchar,
+        :num_events, :ulong_long,
+        :elapsed_time, :long_long,
+        :min_time, :long_long,
+        :max_time, :long_long,
+        :start_time, :long_long,
+        :stop_time, :long_long
+      )
+    end
   end
 end

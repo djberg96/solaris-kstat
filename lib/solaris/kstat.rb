@@ -64,14 +64,11 @@ module Solaris
             when 1 # KS_TYPE_NAMED
               map_named_data_type(kstat)
             when 2 # KS_TYPE_INTR
-              #map_intr_data_type
-              puts "intr"
+              map_intr_data_type(kstat)
             when 3 # KS_TYPE_IO
-              #map_io_data_type
-              puts "io"
+              map_io_data_type(kstat)
             when 4 # KS_TYPE_TIMER
-              #map_timer_data_type
-              puts "timer"
+              map_timer_data_type
             else
               raise ArgumentError, 'unknown data record type'
           end
@@ -84,6 +81,56 @@ module Solaris
     end # record
 
     private
+
+    def map_timer_data_type(kstat)
+      num  = kstat[:ks_ndata]
+      hash = {}
+
+      0.upto(num){ |i|
+        ktimer = KstatTimer.new(kstat[:ks_data] + (i * KstatTimer.size))
+        hash['name']         = ktimer[:name].to_s
+        hash['resv']         = ktimer[:resv]
+        hash['num_events']   = ktimer[:num_events]
+        hash['elapsed_time'] = ktimer[:elapsed_time]
+        hash['min_time']     = ktimer[:min_time]
+        hash['max_time']     = ktimer[:max_time]
+        hash['start_time']   = ktimer[:start_time]
+        hash['stop_time']    = ktimer[:stop_time]
+      }
+
+      hash
+    end
+
+    def map_io_data_type(kstat)
+      num  = kstat[:ks_ndata]
+      hash = {}
+
+      0.upto(num){ |i|
+        kio = KstatIo.new(kstat[:ks_data] + (i * KstatIo.size))
+        hash['nread']       = kio[:nread]
+        hash['nwritten']    = kio[:nwritten]
+        hash['reads']       = kio[:reads]
+        hash['writes']      = kio[:writes]
+        hash['wtime']       = kio[:wtime]
+        hash['wlentime']    = kio[:wlentime]
+        hash['wlastupdate'] = kio[:wlastupdate]
+        hash['rtime']       = kio[:rtime]
+        hash['rlentime']    = kio[:rlentime]
+        hash['rlastupdate'] = kio[:rlastupdate]
+      }
+
+      hash
+    end
+
+    def map_intr_data_type(kstat)
+      hash  = {}
+      names = %w[hard soft watchdog spurious multiple_service]
+
+      0.upto(4){ |i|
+        ksi = KstatIntr.new(kstat[:ks_data] + (i * KstatIntr.size))
+        hash[names[i]] = ksi[:intrs][i]
+      }
+    end
 
     def map_raw_data_type(kstat)
       num  = kstat[:ks_ndata]
