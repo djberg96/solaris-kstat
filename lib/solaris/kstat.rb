@@ -60,12 +60,9 @@ module Solaris
 
           case kstat[:ks_type]
             when 0 # KSTAT_TYPE_RAW
-              #map_raw_data_type
-              puts "raw"
+              map_raw_data_type(kstat)
             when 1 # KS_TYPE_NAMED
-              p kstat[:ks_name]
               map_named_data_type(kstat)
-              #puts "named"
             when 2 # KS_TYPE_INTR
               #map_intr_data_type
               puts "intr"
@@ -85,6 +82,124 @@ module Solaris
         kstat_close(kptr)
       end
     end # record
+
+    private
+
+    def map_raw_data_type(kstat)
+      num  = kstat[:ks_ndata]
+      hash = {}
+
+      if kstat[:ks_module] == 'unix'
+        case kstat[:ks_name].to_s
+          when 'vminfo'
+            map_raw_vm_info(kstat)
+          when 'flushmeter'
+            map_raw_flushmeter(kstat)
+          when 'ncstats'
+            map_raw_ncstats(kstat)
+          when 'sysinfo'
+            map_raw_sysinfo(kstat)
+          when 'var'
+            map_raw_var(kstat)
+        end
+      end
+    end
+
+    def map_raw_vm_info(kstat)
+      num  = kstat[:ks_ndata]
+      hash = {}
+
+      0.upto(num){ |i|
+        vmi = Vminfo.new(kstat[:ks_data] + (i * Vminfo.size))
+        hash['freemem']    = vmi[:freemem]
+        hash['swap_resv']  = vmi[:swap_resv]
+        hash['swap_alloc'] = vmi[:swap_alloc]
+        hash['swap_avail'] = vmi[:swap_avail]
+        hash['swap_free']  = vmi[:swap_free]
+        hash['updates']    = vmi[:updates]
+      }
+
+      hash
+    end
+
+    def map_raw_flushmeter(kstat)
+      num  = kstat[:ks_ndata]
+      hash = {}
+
+      0.upto(num){ |i|
+        fm = Flushmeter.new(kstat[:ks_data] + (i * Flushmeter.size))
+        hash['f_ctx']     = fm[:f_ctx]
+        hash['f_segment'] = fm[:f_segment]
+        hash['f_page']    = fm[:f_page]
+        hash['f_partial'] = fm[:f_partial]
+        hash['f_usr']     = fm[:f_usr]
+        hash['f_region']  = fm[:f_region]
+      }
+
+      hash
+    end
+
+    def map_raw_ncstats(kstat)
+      num  = kstat[:ks_ndata]
+      hash = {}
+
+      0.upto(num){ |i|
+        ncs = NcStats.new(kstat[:ks_data] + (i * NcStats.size))
+        hash['hits']          = ncs[:hits]
+        hash['misses']        = ncs[:misses]
+        hash['enters']        = ncs[:enters]
+        hash['dbl_enters']    = ncs[:dbl_enters]
+        hash['long_enter']    = ncs[:long_enter]
+        hash['long_look']     = ncs[:long_look]
+        hash['move_to_front'] = ncs[:move_to_front]
+        hash['purges']        = ncs[:purges]
+      }
+
+      hash
+    end
+
+    def map_raw_sysinfo(kstat)
+      num  = kstat[:ks_ndata]
+      hash = {}
+
+      0.upto(num){ |i|
+        sys = Sysinfo.new(kstat[:ks_data] + (i * Sysinfo.size))
+        hash['updates'] = sys[:updates]
+        hash['runque']  = sys[:runque]
+        hash['runocc']  = sys[:runocc]
+        hash['swpque']  = sys[:swpque]
+        hash['swpocc']  = sys[:swpocc]
+        hash['waiting'] = sys[:waiting]
+      }
+
+      hash
+    end
+
+    def map_raw_var(kstat)
+      num  = kstat[:ks_ndata]
+      hash = {}
+
+      0.upto(num){ |i|
+        var = Var.new(kstat[:ks_data] + (i * Var.size))
+        hash['v_buf'], var[:v_buf]
+        hash['v_call'], var[:v_call]
+        hash['v_proc'], var[:v_proc]
+        hash['v_maxupttl'], var[:v_maxupttl]
+        hash['v_nglobpris'], var[:v_nglobpris]
+        hash['v_maxsyspri'], var[:v_maxsyspri]
+        hash['v_clist'], var[:v_clist]
+        hash['v_maxup'], var[:v_maxup]
+        hash['v_hbuf'], var[:v_hbuf]
+        hash['v_hmask'], var[:v_hmask]
+        hash['v_pbuf'], var[:v_pbuf]
+        hash['v_sptmap'], var[:v_sptmap]
+        hash['v_maxpmem'], var[:v_maxpmem]
+        hash['v_autoup'], var[:v_autoup]
+        hash['v_bufhwm'], var[:v_bufhwm]
+      }
+
+      hash
+    end
 
     def map_named_data_type(kstat)
       num  = kstat[:ks_ndata]

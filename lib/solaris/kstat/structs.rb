@@ -71,5 +71,71 @@ module Solaris
         :value, Value
       )
     end
+
+    class Vminfo < FFI::Struct
+      layout(
+        :freemem, :uint64,
+        :swap_resv, :uint64,
+        :swap_alloc, :uint64,
+        :swap_avail, :uint64,
+        :swap_free, :uint64,
+        :updates, :uint64
+      )
+    end
+
+    class Flushmeter < FFI::Struct
+      layout(
+        :f_ctx, :uint,
+        :f_segment, :uint,
+        :f_page, :uint,
+        :f_partial, :uint,
+        :f_usr, :uint,
+        :f_region, :uint
+      )
+    end
+
+    class NcStats < FFI::Struct
+      layout(
+        :hits, :int,
+        :misses, :int,
+        :enters, :int,
+        :dbl_enters, :int,
+        :long_enter, :int,
+        :long_look, :int,
+        :move_to_front, :int,
+        :purges, :int
+      )
+    end
+
+    class Sysinfo < FFI::Struct
+      layout(
+        :updates, :uint,
+        :runque, :uint,
+        :runocc, :uint,
+        :swpque, :uint,
+        :swpocc, :uint,
+        :waiting, :uint
+      )
+    end
+
+    class Var < FFI::Struct
+      layout(
+        :v_buf,       :int,
+        :v_call,      :int,
+        :v_proc,      :int,
+        :v_maxupttl,  :int,
+        :v_nglobpris, :int,
+        :v_maxsyspri, :int,
+        :v_clist,     :int,
+        :v_maxup,     :int,
+        :v_hbuf,      :int,
+        :v_hmask,     :int,
+        :v_pbuf,      :int,
+        :v_sptmap,    :int,
+        :v_maxpmem,   :int,
+        :v_autoup,    :int,
+        :v_bufhwm,    :int
+      )
+    end
   end
 end
