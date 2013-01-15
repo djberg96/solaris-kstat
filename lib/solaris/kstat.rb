@@ -32,6 +32,11 @@ module Solaris
 
       kstat = KstatStruct.new(ptr)
 
+      mhash = {} # Holds modules
+      ihash = {} # Holds instances
+      nhash = {} # Holds names
+      shash = {} # Subhash for names
+
       begin
         # Sync the chain with the kernel
         if kstat_chain_update(kptr) < 0
@@ -60,24 +65,33 @@ module Solaris
 
           case kstat[:ks_type]
             when 0 # KSTAT_TYPE_RAW
-              map_raw_data_type(kstat)
+              shash = map_raw_data_type(kstat)
             when 1 # KS_TYPE_NAMED
-              map_named_data_type(kstat)
+              shash = map_named_data_type(kstat)
             when 2 # KS_TYPE_INTR
-              map_intr_data_type(kstat)
+              shash = map_intr_data_type(kstat)
             when 3 # KS_TYPE_IO
-              map_io_data_type(kstat)
+              shash = map_io_data_type(kstat)
             when 4 # KS_TYPE_TIMER
-              map_timer_data_type
+              shash = map_timer_data_type
             else
               raise ArgumentError, 'unknown data record type'
           end
+
+          shash['class'] = kstat[:ks_class]
+
+          nhash[kstat[:ks_name]]     = shash
+          ihash[kstat[:ks_instance]] = nhash # TODO: Convert to array
+          mhash[kstat[:ks_module]]   = ihash # TODO: Convert to array
 
           kstat = KstatStruct.new(kstat[:ks_next])
         end
       ensure
         kstat_close(kptr)
       end
+
+      # TODO: I think we have a volatile memory issue.
+      mhash
     end # record
 
     private
@@ -228,21 +242,21 @@ module Solaris
 
       0.upto(num){ |i|
         var = Var.new(kstat[:ks_data] + (i * Var.size))
-        hash['v_buf'], var[:v_buf]
-        hash['v_call'], var[:v_call]
-        hash['v_proc'], var[:v_proc]
-        hash['v_maxupttl'], var[:v_maxupttl]
-        hash['v_nglobpris'], var[:v_nglobpris]
-        hash['v_maxsyspri'], var[:v_maxsyspri]
-        hash['v_clist'], var[:v_clist]
-        hash['v_maxup'], var[:v_maxup]
-        hash['v_hbuf'], var[:v_hbuf]
-        hash['v_hmask'], var[:v_hmask]
-        hash['v_pbuf'], var[:v_pbuf]
-        hash['v_sptmap'], var[:v_sptmap]
-        hash['v_maxpmem'], var[:v_maxpmem]
-        hash['v_autoup'], var[:v_autoup]
-        hash['v_bufhwm'], var[:v_bufhwm]
+        hash['v_buf']       = var[:v_buf]
+        hash['v_call']      = var[:v_call]
+        hash['v_proc']      = var[:v_proc]
+        hash['v_maxupttl']  = var[:v_maxupttl]
+        hash['v_nglobpris'] = var[:v_nglobpris]
+        hash['v_maxsyspri'] = var[:v_maxsyspri]
+        hash['v_clist']     = var[:v_clist]
+        hash['v_maxup']     = var[:v_maxup]
+        hash['v_hbuf']      = var[:v_hbuf]
+        hash['v_hmask']     = var[:v_hmask]
+        hash['v_pbuf']      = var[:v_pbuf]
+        hash['v_sptmap']    = var[:v_sptmap]
+        hash['v_maxpmem']   = var[:v_maxpmem]
+        hash['v_autoup']    = var[:v_autoup]
+        hash['v_bufhwm']    = var[:v_bufhwm]
       }
 
       hash
@@ -276,4 +290,4 @@ module Solaris
   end # Kstat
 end # Solaris
 
-Solaris::Kstat.new('cpu_info', 0).record
+p Solaris::Kstat.new('cpu_info', 0).record
