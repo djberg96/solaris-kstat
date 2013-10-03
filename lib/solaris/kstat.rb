@@ -264,7 +264,7 @@ module Solaris
 
     def map_named_data_type(kstat)
       num  = kstat[:ks_ndata]
-      hash = {}
+      hash = {} # TODO: volatile
 
       0.upto(num){ |i|
         knp = KstatNamed.new(kstat[:ks_data] + (i * KstatNamed.size))
@@ -290,4 +290,9 @@ module Solaris
   end # Kstat
 end # Solaris
 
-p Solaris::Kstat.new('cpu_info', 0).record
+if $0 == __FILE__
+  require 'pp'
+  #pp Solaris::Kstat.new('cpu_info').record['cpu_info']
+  k = Solaris::Kstat.new('cpu', 0, 'sys')
+  pp k.record
+end
