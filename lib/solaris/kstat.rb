@@ -1,5 +1,6 @@
 require File.join(File.dirname(__FILE__), 'kstat', 'structs')
 require File.join(File.dirname(__FILE__), 'kstat', 'functions')
+require 'pp'
 
 module Solaris
   class Kstat
@@ -44,6 +45,8 @@ module Solaris
         end
 
         while !kstat.null?
+          break if kstat[:ks_next].null?
+
           if @module && @module != kstat[:ks_module].to_s
             kstat = KstatStruct.new(kstat[:ks_next])
             next
@@ -80,9 +83,18 @@ module Solaris
 
           shash['class'] = kstat[:ks_class]
 
-          nhash[kstat[:ks_name]]     = shash
-          ihash[kstat[:ks_instance]] = nhash # TODO: Convert to array
-          mhash[kstat[:ks_module]]   = ihash # TODO: Convert to array
+          ks_name = kstat[:ks_name]
+          ks_instance = kstat[:ks_instance]
+          ks_module = kstat[:ks_module]
+
+          nhash[ks_name]     = shash
+          ihash[ks_instance] = nhash
+          mhash[ks_module]   = ihash
+
+          pp mhash
+
+          # BUG: At this point mhash seems to be ok, but it's corrupted
+          # once we break out of this loop.
 
           kstat = KstatStruct.new(kstat[:ks_next])
         end
@@ -264,7 +276,7 @@ module Solaris
 
     def map_named_data_type(kstat)
       num  = kstat[:ks_ndata]
-      hash = {} # TODO: volatile
+      hash = {}
 
       0.upto(num){ |i|
         knp = KstatNamed.new(kstat[:ks_data] + (i * KstatNamed.size))
@@ -294,5 +306,5 @@ if $0 == __FILE__
   require 'pp'
   #pp Solaris::Kstat.new('cpu_info').record['cpu_info']
   k = Solaris::Kstat.new('cpu', 0, 'sys')
-  pp k.record
+  k.record
 end
