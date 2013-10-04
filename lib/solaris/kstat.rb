@@ -25,13 +25,15 @@ module Solaris
         raise SystemCallError.new('kstat_open', FFI.errno)
       end
 
-      ptr = kstat_lookup(kptr, @module, @instance, @name)
+      begin
+        ptr = kstat_lookup(kptr, @module, @instance, @name)
 
-      if ptr.null?
-        raise SystemCallError.new('kstat_lookup', FFI.errno)
+        if ptr.null?
+          raise SystemCallError.new('kstat_lookup', FFI.errno)
+        end
+      ensure
+        kstat_close(kptr)
       end
-
-      kstat = KstatStruct.new(ptr)
 
       mhash = {} # Holds modules
       ihash = {} # Holds instances
@@ -39,6 +41,8 @@ module Solaris
       shash = {} # Subhash for names
 
       begin
+        kstat = KstatStruct.new(ptr)
+
         # Sync the chain with the kernel
         if kstat_chain_update(kptr) < 0
           raise SystemCallError.new('kstat_chain_update', FFI.errno)
@@ -91,7 +95,7 @@ module Solaris
           ihash[ks_instance] = nhash
           mhash[ks_module]   = ihash
 
-          pp mhash
+          #pp mhash
 
           # BUG: At this point mhash seems to be ok, but it's corrupted
           # once we break out of this loop.
@@ -306,5 +310,5 @@ if $0 == __FILE__
   require 'pp'
   #pp Solaris::Kstat.new('cpu_info').record['cpu_info']
   k = Solaris::Kstat.new('cpu', 0, 'sys')
-  k.record
+  pp k.record
 end
