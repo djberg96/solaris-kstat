@@ -25,14 +25,11 @@ module Solaris
         raise SystemCallError.new('kstat_open', FFI.errno)
       end
 
-      begin
-        ptr = kstat_lookup(kptr, @module, @instance, @name)
+      ptr = kstat_lookup(kptr, @module, @instance, @name)
 
-        if ptr.null?
-          raise SystemCallError.new('kstat_lookup', FFI.errno)
-        end
-      ensure
+      if ptr.null?
         kstat_close(kptr)
+        raise SystemCallError.new('kstat_lookup', FFI.errno)
       end
 
       mhash = {} # Holds modules
