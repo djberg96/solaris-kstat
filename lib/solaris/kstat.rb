@@ -98,10 +98,12 @@ module Solaris
           kstat = KstatStruct.new(kstat[:ks_next])
         end
       ensure
+        # TODO: This seems to be the source of our trouble. Remove this call
+        # and we no longer see mhash get corrupted. But then we have a leak.
+        # The solution may involve auto_ptr + release.
         kstat_close(kptr)
       end
 
-      # TODO: I think we have a volatile memory issue.
       mhash
     end # record
 
