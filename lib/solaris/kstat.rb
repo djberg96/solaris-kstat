@@ -25,9 +25,9 @@ module Solaris
         raise SystemCallError.new('kstat_open', FFI.errno)
       end
 
-      ptr = kstat_lookup(kptr, @module, @instance, @name)
+      kstat = kstat_lookup(kptr, @module, @instance, @name)
 
-      if ptr.null?
+      if kstat.null?
         kstat_close(kptr)
         raise SystemCallError.new('kstat_lookup', FFI.errno)
       end
@@ -38,8 +38,6 @@ module Solaris
       shash = {} # Subhash for names
 
       begin
-        kstat = KstatStruct.new(ptr)
-
         # Sync the chain with the kernel
         if kstat_chain_update(kptr) < 0
           raise SystemCallError.new('kstat_chain_update', FFI.errno)
