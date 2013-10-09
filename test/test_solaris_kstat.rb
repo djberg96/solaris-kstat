@@ -4,11 +4,8 @@
 # Test suite for the solaris-kstat Ruby library. You should run this via
 # the 'rake test' task.
 ###############################################################################
-require 'rubygems'
-gem 'test-unit'
-
 require 'solaris/kstat'
-require 'test/unit'
+require 'test-unit'
 require 'set'
 include Solaris
 
@@ -17,56 +14,93 @@ class TC_Solaris_Kstat < Test::Unit::TestCase
     @kstat = Kstat.new
   end
 
-  def test_version
-    assert_equal('1.0.3', Kstat::VERSION)
+  test "version number is set to the expected value" do
+    assert_equal('1.1.0', Kstat::VERSION)
   end
 
-  def test_name
+  test "name method basic functionality" do
     assert_respond_to(@kstat, :name)
-    assert_respond_to(@kstat, :name=)
-    assert_nil(@kstat.name)
     assert_nothing_raised{ @kstat.name }
+  end
+
+  test "name is nil by default" do
+    assert_nil(@kstat.name)
+  end
+
+  test "name= method basic functionality" do
+    assert_respond_to(@kstat, :name=)
     assert_nothing_raised{ @kstat.name = 'foo' }
   end
 
-  def test_module
+  test "name= method works as expected" do
+    assert_nothing_raised{ @kstat.name = 'cpu' }
+    assert_equal('cpu', @kstat.name)
+  end
+
+  test "module basic functionality" do
     assert_respond_to(@kstat, :module)
-    assert_respond_to(@kstat, :module=)
-    assert_nil(@kstat.module)
     assert_nothing_raised{ @kstat.module }
+  end
+
+  test "module is nil by default" do
+    assert_nil(@kstat.module)
+  end
+
+  test "module= method basic functionality" do
+    assert_respond_to(@kstat, :module=)
     assert_nothing_raised{ @kstat.module = 'bar' }
   end
 
-  def test_instance
+  test "module= method works as expected" do
+    assert_nothing_raised{ @kstat.module = 'bar' }
+    assert_equal('bar', @kstat.module)
+  end
+
+  test "instance method basic functionality" do
     assert_respond_to(@kstat, :instance)
-    assert_respond_to(@kstat, :instance=)
-    assert_nil(@kstat.instance)
     assert_nothing_raised{ @kstat.instance }
+  end
+
+  test "instance method is -1 by default" do
+    assert_equal(-1, @kstat.instance)
+  end
+
+  test "instance= method basic functionality" do
+    assert_respond_to(@kstat, :instance=)
     assert_nothing_raised{ @kstat.instance = 0 }
   end
 
-  def test_constructor_valid_values
-    assert_nothing_raised{ Kstat.new('cpu_info',0,'cpu_info0').record }
-    assert_nothing_raised{ Kstat.new(nil,0,'cpu_info0').record }
-    assert_nothing_raised{ Kstat.new('cpu_info',0,nil).record }
+  test "instance= method works as expected" do
+    assert_nothing_raised{ @kstat.instance = 0 }
+    assert_equal(0, @kstat.instance)
   end
 
-  def test_constructor_invalid_values
-    assert_raises(Kstat::Error){ Kstat.new('bogus').record }
-    assert_raises(Kstat::Error){ Kstat.new('cpu_info',99).record }
-    assert_raises(Kstat::Error){ Kstat.new('cpu_info',0,'bogus').record }
-    assert_raises(TypeError){ Kstat.new('cpu_info','x').record }
+  test "the module argument must be a string" do
+    assert_nothing_raised{ Kstat.new('cpu_info') }
+    assert_raise(TypeError){ Kstat.new(0) }
   end
 
-  def test_record_basic
+  test "the instance argument must be a number" do
+    assert_nothing_raised{ Kstat.new(nil, 0, nil) }
+    assert_raise(TypeError){ Kstat.new(nil, 'test', nil) }
+  end
+
+  test "the name argument must be a string" do
+    assert_nothing_raised{ Kstat.new('cpu_info', 0, 'cpu_info0') }
+    assert_raise(TypeError){ Kstat.new('cpu_info', 0, 0) }
+  end
+
+  test "record method basic functionality" do
     assert_respond_to(@kstat, :record)
+    #assert_nothing_raised{ @kstat.record }
   end
 
-  def test_record_named
+  test "named record works as expected" do
     assert_nothing_raised{ @kstat.record['cpu_info'][0]['cpu_info0'] }
     assert_kind_of(Hash, @kstat.record['cpu_info'][0]['cpu_info0'])
   end
 
+=begin
   def test_record_io
     assert_nothing_raised{ @kstat.record['nfs'][1]['nfs1'] }
     assert_kind_of(Hash, @kstat.record['nfs'][1]['nfs1'])
@@ -78,7 +112,7 @@ class TC_Solaris_Kstat < Test::Unit::TestCase
   end
 
   def test_record_raw_vminfo
-    keys = %w/class freemem swap_alloc swap_avail swap_free swap_resv/
+    keys = %w[class freemem swap_alloc swap_avail swap_free swap_resv]
 
     assert_nothing_raised{ @kstat.record['unix'][0]['vminfo'] }
     assert_kind_of(Hash, @kstat.record['unix'][0]['vminfo'])
@@ -86,11 +120,11 @@ class TC_Solaris_Kstat < Test::Unit::TestCase
   end
 
   def test_record_raw_var
-    keys = %w/
+    keys = %w[
       class v_autoup v_buf v_bufhwm v_call v_clist v_hbuf v_hmask
       v_maxpmem v_maxsyspri v_maxup v_maxupttl v_nglobpris v_pbuf
       v_proc v_sptmap
-    /
+    ]
 
     assert_nothing_raised{ @kstat.record['unix'][0]['var'] }
     assert_kind_of(Hash, @kstat.record['unix'][0]['var'])
@@ -98,7 +132,7 @@ class TC_Solaris_Kstat < Test::Unit::TestCase
   end
 
   def test_record_raw_biostats
-    keys = %w/
+    keys = %w[
       buffer_cache_hits
       buffer_cache_lookups
       buffers_locked_by_someone
@@ -106,7 +140,7 @@ class TC_Solaris_Kstat < Test::Unit::TestCase
       duplicate_buffers_found
       new_buffer_requests
       waits_for_buffer_allocs
-    /
+    ]
 
     assert_nothing_raised{ @kstat.record['unix'][0]['biostats'] }
     assert_kind_of([Hash, NilClass], @kstat.record['unix'][0]['biostats'])
@@ -114,7 +148,7 @@ class TC_Solaris_Kstat < Test::Unit::TestCase
   end
 
   def test_record_raw_cpu_stat
-    keys = %w/
+    keys = %w[
       class cpu_idle cpu_user cpu_kernel cpu_wait wait_io wait_swap
       wait_pio bread bwrite lread lwrite phread phwrite pswitch
       trap intr syscall sysread syswrite sysfork sysvfork sysexec
@@ -123,7 +157,7 @@ class TC_Solaris_Kstat < Test::Unit::TestCase
       fileovf procovf intrthread intrblk idlethread inv_swtch
       nthreads cpumigrate xcalls mutex_adenters rw_rdfails
       rw_wrfails modload modunload bawrite
-    /
+    ]
 
     assert_nothing_raised{ @kstat.record['cpu_stat'][0]['cpu_stat0'] }
     assert_kind_of(Hash, @kstat.record['cpu_stat'][0]['cpu_stat0'])
@@ -137,7 +171,7 @@ class TC_Solaris_Kstat < Test::Unit::TestCase
   end
 
   def test_record_ncstats
-    keys = %w/
+    keys = %w[
       class
       dbl_enters
       enters
@@ -146,7 +180,7 @@ class TC_Solaris_Kstat < Test::Unit::TestCase
       long_look misses
       move_to_front
       purges
-    /
+    ]
 
     assert_nothing_raised{ @kstat.record['unix'][0]['ncstats'] }
     assert_kind_of(Hash, @kstat.record['unix'][0]['ncstats'])
@@ -154,7 +188,7 @@ class TC_Solaris_Kstat < Test::Unit::TestCase
   end
 
   def test_record_sysinfo
-    keys = %w/class runocc runque swpocc swpque updates waiting/
+    keys = %w[class runocc runque swpocc swpque updates waiting]
 
     assert_nothing_raised{ @kstat.record['unix'][0]['sysinfo'] }
     assert_kind_of(Hash, @kstat.record['unix'][0]['sysinfo'])
@@ -164,6 +198,7 @@ class TC_Solaris_Kstat < Test::Unit::TestCase
   def test_class_set
     assert_equal("misc", @kstat.record['unix'][0]['sysinfo']['class'])
   end
+=end
 
   def teardown
     @kstat = nil
