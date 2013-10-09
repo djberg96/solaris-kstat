@@ -1,6 +1,5 @@
 require File.join(File.dirname(__FILE__), 'kstat', 'structs')
 require File.join(File.dirname(__FILE__), 'kstat', 'functions')
-require 'pp'
 
 module Solaris
   class Kstat
@@ -8,11 +7,19 @@ module Solaris
     include Solaris::Structs
     include Solaris::Functions
 
-    attr_reader :module
-    attr_reader :instance
-    attr_reader :name
+    # The version of the solaris-kstat library
+    VERSION = '1.1.0'
+
+    attr_accessor :module
+    attr_accessor :instance
+    attr_accessor :name
 
     def initialize(mod=nil, instance=-1, name=nil)
+      # Type checking added since invalid values could cause a segfault later on.
+      raise TypeError unless mod.is_a?(String) if mod
+      raise TypeError unless instance.is_a?(Fixnum)
+      raise TypeError unless name.is_a?(String) if name
+
       @module   = mod
       @instance = instance
       @name     = name
@@ -155,9 +162,6 @@ module Solaris
     end
 
     def map_raw_data_type(kstat)
-      num  = kstat[:ks_ndata]
-      hash = {}
-
       if kstat[:ks_module] == 'unix'
         case kstat[:ks_name].to_s
           when 'vminfo'
@@ -301,6 +305,7 @@ end # Solaris
 if $0 == __FILE__
   require 'pp'
   #pp Solaris::Kstat.new('cpu_info').record['cpu_info']
-  k = Solaris::Kstat.new('cpu', 0, 'sys')
+  #k = Solaris::Kstat.new('cpu', 0, 'sys')
+  k = Solaris::Kstat.new('cpu', 0)
   pp k.record
 end
