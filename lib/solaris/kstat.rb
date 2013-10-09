@@ -37,72 +37,67 @@ module Solaris
       nhash = {} # Holds names
       shash = {} # Subhash for names
 
-      begin
-        # Sync the chain with the kernel
-        if kstat_chain_update(kptr) < 0
-          raise SystemCallError.new('kstat_chain_update', FFI.errno)
-        end
-
-        while !kstat.null?
-          break if kstat[:ks_next].null?
-
-          if @module && @module != kstat[:ks_module].to_s
-            kstat = KstatStruct.new(kstat[:ks_next])
-            next
-          end
-
-          if @instance != -1 && @instance != kstat[:ks_instance]
-            kstat = KstatStruct.new(kstat[:ks_next])
-            next
-          end
-
-          if @name && @name != kstat[:ks_name].to_s
-            kstat = KstatStruct.new(kstat[:ks_next])
-            next
-          end
-
-          if kstat_read(kptr, kstat, nil) < 0
-            raise SystemCallError.new('kstat_read', FFI.errno)
-          end
-
-          case kstat[:ks_type]
-            when 0 # KSTAT_TYPE_RAW
-              shash = map_raw_data_type(kstat)
-            when 1 # KS_TYPE_NAMED
-              shash = map_named_data_type(kstat)
-            when 2 # KS_TYPE_INTR
-              shash = map_intr_data_type(kstat)
-            when 3 # KS_TYPE_IO
-              shash = map_io_data_type(kstat)
-            when 4 # KS_TYPE_TIMER
-              shash = map_timer_data_type
-            else
-              raise ArgumentError, 'unknown data record type'
-          end
-
-          shash['class'] = kstat[:ks_class]
-
-          ks_name = kstat[:ks_name]
-          ks_instance = kstat[:ks_instance]
-          ks_module = kstat[:ks_module]
-
-          nhash[ks_name]     = shash
-          ihash[ks_instance] = nhash
-          mhash[ks_module]   = ihash
-
-          #pp mhash
-
-          # BUG: At this point mhash seems to be ok, but it's corrupted
-          # once we break out of this loop.
-
-          kstat = KstatStruct.new(kstat[:ks_next])
-        end
-      ensure
-        # TODO: This seems to be the source of our trouble. Remove this call
-        # and we no longer see mhash get corrupted. But then we have a leak.
-        # The solution may involve auto_ptr + release.
-        kstat_close(kptr)
+      # Sync the chain with the kernel
+      if kstat_chain_update(kptr) < 0
+        raise SystemCallError.new('kstat_chain_update', FFI.errno)
       end
+
+      while !kstat.null?
+        break if kstat[:ks_next].null?
+
+        if @module && @module != kstat[:ks_module].to_s
+          kstat = KstatStruct.new(kstat[:ks_next])
+          next
+        end
+
+        if @instance != -1 && @instance != kstat[:ks_instance]
+          kstat = KstatStruct.new(kstat[:ks_next])
+          next
+        end
+
+        if @name && @name != kstat[:ks_name].to_s
+          kstat = KstatStruct.new(kstat[:ks_next])
+          next
+        end
+
+        if kstat_read(kptr, kstat, nil) < 0
+          raise SystemCallError.new('kstat_read', FFI.errno)
+        end
+
+        case kstat[:ks_type]
+          when 0 # KSTAT_TYPE_RAW
+            shash = map_raw_data_type(kstat)
+          when 1 # KS_TYPE_NAMED
+            shash = map_named_data_type(kstat)
+          when 2 # KS_TYPE_INTR
+            shash = map_intr_data_type(kstat)
+          when 3 # KS_TYPE_IO
+            shash = map_io_data_type(kstat)
+          when 4 # KS_TYPE_TIMER
+            shash = map_timer_data_type
+          else
+            raise ArgumentError, 'unknown data record type'
+        end
+
+        shash['class'] = kstat[:ks_class]
+
+        ks_name = kstat[:ks_name]
+        ks_instance = kstat[:ks_instance]
+        ks_module = kstat[:ks_module]
+
+        nhash[ks_name]     = shash
+        ihash[ks_instance] = nhash
+        mhash[ks_module]   = ihash
+
+        kstat = KstatStruct.new(kstat[:ks_next])
+      end
+
+      # Note: We've got a custom destructor for the KstatCtl struct, so
+      # that's why there's no explicit kstat_close here. This was done
+      # because calling kstat_close any earlier resulted in the mhash
+      # getting corrupted.
+      #
+      # See the functions.rb file for the implementation.
 
       mhash
     end # record
