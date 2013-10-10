@@ -87,7 +87,7 @@ module Solaris
               raise ArgumentError, 'unknown data record type'
           end
 
-          shash[:class] = kstat[:ks_class].to_s
+          shash['class'] = kstat[:ks_class].to_s
 
           ks_name = kstat[:ks_name].to_s
           ks_instance = kstat[:ks_instance]
@@ -284,7 +284,7 @@ module Solaris
 
       0.upto(num){ |i|
         knp = KstatNamed.new(kstat[:ks_data] + (i * KstatNamed.size))
-        name = knp[:name].to_s.to_sym
+        name = knp[:name].to_s
 
         case knp[:data_type]
           when 0 # KSTAT_DATA_CHAR
@@ -313,5 +313,5 @@ if $0 == __FILE__
   #k = Solaris::Kstat.new('cpu', 0, 'sys')
   k = Solaris::Kstat.new('cpu', 0)
   record = k.record
-  p record['cpu'][0]['vm']
+  p record['cpu'][0]
 end
