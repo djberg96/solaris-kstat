@@ -125,13 +125,6 @@ module Solaris
         kstat_close(kptr)
       end
 
-      # Note: We've got a custom destructor for the KstatCtl struct, so
-      # that's why there's no explicit kstat_close here. This was done
-      # because calling kstat_close any earlier resulted in the mhash
-      # getting corrupted.
-      #
-      # See the functions.rb file for the implementation.
-
       mhash
     end # record
 
@@ -195,7 +188,7 @@ module Solaris
       if kstat[:ks_module].to_s == 'unix'
         case kstat[:ks_name].to_s
           when 'vminfo'
-            hash = map_raw_vm_info(kstat)
+            hash = map_raw_vminfo(kstat)
           when 'flushmeter'
             hash = map_raw_flushmeter(kstat)
           when 'ncstats'
@@ -220,19 +213,17 @@ module Solaris
       hash
     end
 
-    def map_raw_vm_info(kstat)
-      num  = kstat[:ks_ndata]
+    def map_raw_vminfo(kstat)
       hash = {}
 
-      0.upto(num){ |i|
-        vmi = Vminfo.new(kstat[:ks_data] + (i * Vminfo.size))
-        hash['freemem']    = vmi[:freemem]
-        hash['swap_resv']  = vmi[:swap_resv]
-        hash['swap_alloc'] = vmi[:swap_alloc]
-        hash['swap_avail'] = vmi[:swap_avail]
-        hash['swap_free']  = vmi[:swap_free]
-        hash['updates']    = vmi[:updates]
-      }
+      vmi = Vminfo.new(kstat[:ks_data])
+
+      hash['freemem']    = vmi[:freemem]
+      hash['swap_resv']  = vmi[:swap_resv]
+      hash['swap_alloc'] = vmi[:swap_alloc]
+      hash['swap_avail'] = vmi[:swap_avail]
+      hash['swap_free']  = vmi[:swap_free]
+      hash['updates']    = vmi[:updates]
 
       hash
     end
@@ -350,7 +341,7 @@ if $0 == __FILE__
   #pp Solaris::Kstat.new('cpu_info').record['cpu_info']
   #k = Solaris::Kstat.new('cpu', 0, 'sys')
   #k = Solaris::Kstat.new('cpu')
-  k = Solaris::Kstat.new
+  k = Solaris::Kstat.new('unix', 0, 'vminfo')
   record = k.record
   pp record
 end

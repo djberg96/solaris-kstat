@@ -74,12 +74,12 @@ module Solaris
 
     class Vminfo < FFI::Struct
       layout(
-        :freemem, :uint64,
-        :swap_resv, :uint64,
-        :swap_alloc, :uint64,
-        :swap_avail, :uint64,
-        :swap_free, :uint64,
-        :updates, :uint64
+        :freemem, :uint64_t,
+        :swap_resv, :uint64_t,
+        :swap_alloc, :uint64_t,
+        :swap_avail, :uint64_t,
+        :swap_free, :uint64_t,
+        :updates, :uint64_t
       )
     end
 
