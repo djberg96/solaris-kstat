@@ -199,7 +199,7 @@ module Solaris
           when 'flushmeter'
             hash = map_raw_flushmeter(kstat)
           when 'ncstats'
-            hahs = map_raw_ncstats(kstat)
+            hash = map_raw_ncstats(kstat)
           when 'sysinfo'
             hash = map_raw_sysinfo(kstat)
           when 'var'
@@ -352,5 +352,5 @@ if $0 == __FILE__
   #k = Solaris::Kstat.new('cpu')
   k = Solaris::Kstat.new
   record = k.record
-  #pp record
+  pp record
 end
