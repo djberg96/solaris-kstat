@@ -14,6 +14,24 @@ module Solaris
     attr_accessor :instance
     attr_accessor :name
 
+    # Creates and returns a Kstat object. This does NOT traverse the kstat
+    # chain. The Kstat#record method uses the values passed to actually
+    # retrieve data.
+    #
+    # You may specify a module, an instance and a name.  The module defaults to
+    # nil (all modules), the instance defaults to -1 (all instances) and the
+    # name defaults to nil (all names).
+    #
+    # Examples:
+    #
+    #   require 'solaris/kstat'
+    #   include Kstat
+    #
+    #   k1 = Kstat.new                    # Everything
+    #   k2 = Kstat.new('cpu')             # Just CPU info
+    #   k3 = Kstat.new('cpu', 0)          # Just CPU info for instance 0
+    #   k4 = Kstat.new('cpu', 0, 'sys')   # CPU info for instance 0 named 'sys'
+    #
     def initialize(mod=nil, instance=-1, name=nil)
       # Type checking added since invalid values could cause a segfault later on.
       raise TypeError unless mod.is_a?(String) if mod
@@ -25,6 +43,10 @@ module Solaris
       @name     = name
     end
 
+    # Returns a nested hash based on the values passed to the constructor.  How
+    # deeply that hash is nested depends on the values passed to the constructor.
+    # The more specific your criterion, the less data you will receive.
+    #
     def record
       kptr = kstat_open()
 
@@ -76,13 +98,13 @@ module Solaris
             when 0 # KSTAT_TYPE_RAW
               shash = map_raw_data_type(kstat)
             when 1 # KS_TYPE_NAMED
-              shash = map_named_data_type(kstat)
+              #shash = map_named_data_type(kstat)
             when 2 # KS_TYPE_INTR
-              shash = map_intr_data_type(kstat)
+              #shash = map_intr_data_type(kstat)
             when 3 # KS_TYPE_IO
-              shash = map_io_data_type(kstat)
+              #shash = map_io_data_type(kstat)
             when 4 # KS_TYPE_TIMER
-              shash = map_timer_data_type
+              #shash = map_timer_data_type
             else
               raise ArgumentError, 'unknown data record type'
           end
@@ -100,7 +122,7 @@ module Solaris
           kstat = KstatStruct.new(kstat[:ks_next])
         end
       ensure
-        #kstat_close(kptr)
+        kstat_close(kptr)
       end
 
       # Note: We've got a custom destructor for the KstatCtl struct, so
@@ -163,23 +185,39 @@ module Solaris
         ksi = KstatIntr.new(kstat[:ks_data] + (i * KstatIntr.size))
         hash[names[i]] = ksi[:intrs][i]
       }
+
+      hash
     end
 
     def map_raw_data_type(kstat)
-      if kstat[:ks_module] == 'unix'
+      hash = {}
+
+      if kstat[:ks_module].to_s == 'unix'
         case kstat[:ks_name].to_s
           when 'vminfo'
-            map_raw_vm_info(kstat)
+            hash = map_raw_vm_info(kstat)
           when 'flushmeter'
-            map_raw_flushmeter(kstat)
+            hash = map_raw_flushmeter(kstat)
           when 'ncstats'
-            map_raw_ncstats(kstat)
+            hahs = map_raw_ncstats(kstat)
           when 'sysinfo'
-            map_raw_sysinfo(kstat)
+            hash = map_raw_sysinfo(kstat)
           when 'var'
-            map_raw_var(kstat)
+            hash = map_raw_var(kstat)
         end
       end
+
+      if kstat[:ks_module].to_s == 'cpu_stat'
+        # hash = map_raw_cpu_sysinfo(kstat)
+      end
+
+      if kstat[:ks_module].to_s == 'nfs'
+        if kstat[:ks_name].to_s == 'mntinfo'
+          # hash = map_raw_mnt_info
+        end
+      end
+
+      hash
     end
 
     def map_raw_vm_info(kstat)
@@ -311,7 +349,8 @@ if $0 == __FILE__
   require 'pp'
   #pp Solaris::Kstat.new('cpu_info').record['cpu_info']
   #k = Solaris::Kstat.new('cpu', 0, 'sys')
-  k = Solaris::Kstat.new('cpu', 0)
+  #k = Solaris::Kstat.new('cpu')
+  k = Solaris::Kstat.new
   record = k.record
-  p record['cpu'][0]
+  #pp record
 end
