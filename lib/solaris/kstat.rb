@@ -49,54 +49,58 @@ module Solaris
         raise SystemCallError.new('kstat_chain_update', FFI.errno)
       end
 
-      while !kstat.null?
-        break if kstat[:ks_next].null?
+      begin
+        while !kstat.null?
+          break if kstat[:ks_next].null?
 
-        if @module && @module != kstat[:ks_module].to_s
+          if @module && @module != kstat[:ks_module].to_s
+            kstat = KstatStruct.new(kstat[:ks_next])
+            next
+          end
+
+          if @instance != -1 && @instance != kstat[:ks_instance]
+            kstat = KstatStruct.new(kstat[:ks_next])
+            next
+          end
+
+          if @name && @name != kstat[:ks_name].to_s
+            kstat = KstatStruct.new(kstat[:ks_next])
+            next
+          end
+
+          if kstat_read(kptr, kstat, nil) < 0
+            raise SystemCallError.new('kstat_read', FFI.errno)
+          end
+
+          case kstat[:ks_type]
+            when 0 # KSTAT_TYPE_RAW
+              shash = map_raw_data_type(kstat)
+            when 1 # KS_TYPE_NAMED
+              shash = map_named_data_type(kstat)
+            when 2 # KS_TYPE_INTR
+              shash = map_intr_data_type(kstat)
+            when 3 # KS_TYPE_IO
+              shash = map_io_data_type(kstat)
+            when 4 # KS_TYPE_TIMER
+              shash = map_timer_data_type
+            else
+              raise ArgumentError, 'unknown data record type'
+          end
+
+          shash[:class] = kstat[:ks_class].to_s
+
+          ks_name = kstat[:ks_name].to_s
+          ks_instance = kstat[:ks_instance]
+          ks_module = kstat[:ks_module].to_s
+
+          nhash[ks_name]     = shash
+          ihash[ks_instance] = nhash
+          mhash[ks_module]   = ihash
+
           kstat = KstatStruct.new(kstat[:ks_next])
-          next
         end
-
-        if @instance != -1 && @instance != kstat[:ks_instance]
-          kstat = KstatStruct.new(kstat[:ks_next])
-          next
-        end
-
-        if @name && @name != kstat[:ks_name].to_s
-          kstat = KstatStruct.new(kstat[:ks_next])
-          next
-        end
-
-        if kstat_read(kptr, kstat, nil) < 0
-          raise SystemCallError.new('kstat_read', FFI.errno)
-        end
-
-        case kstat[:ks_type]
-          when 0 # KSTAT_TYPE_RAW
-            shash = map_raw_data_type(kstat)
-          when 1 # KS_TYPE_NAMED
-            shash = map_named_data_type(kstat)
-          when 2 # KS_TYPE_INTR
-            shash = map_intr_data_type(kstat)
-          when 3 # KS_TYPE_IO
-            shash = map_io_data_type(kstat)
-          when 4 # KS_TYPE_TIMER
-            shash = map_timer_data_type
-          else
-            raise ArgumentError, 'unknown data record type'
-        end
-
-        shash['class'] = kstat[:ks_class]
-
-        ks_name = kstat[:ks_name]
-        ks_instance = kstat[:ks_instance]
-        ks_module = kstat[:ks_module]
-
-        nhash[ks_name]     = shash
-        ihash[ks_instance] = nhash
-        mhash[ks_module]   = ihash
-
-        kstat = KstatStruct.new(kstat[:ks_next])
+      ensure
+        #kstat_close(kptr)
       end
 
       # Note: We've got a custom destructor for the KstatCtl struct, so
@@ -280,18 +284,19 @@ module Solaris
 
       0.upto(num){ |i|
         knp = KstatNamed.new(kstat[:ks_data] + (i * KstatNamed.size))
+        name = knp[:name].to_s.to_sym
 
         case knp[:data_type]
           when 0 # KSTAT_DATA_CHAR
-            hash[knp[:name]] = knp[:value][:c]
+            hash[name] = knp[:value][:c]
           when 1 # KSTAT_DATA_INT32
-            hash[knp[:name]] = knp[:value][:i32]
+            hash[name] = knp[:value][:i32]
           when 2 # KSTAT_DATA_UINT32
-            hash[knp[:name]] = knp[:value][:ui32]
+            hash[name] = knp[:value][:ui32]
           when 3 # KSTAT_DATA_INT64
-            hash[knp[:name]] = knp[:value][:i64]
+            hash[name] = knp[:value][:i64]
           when 4 # KSTAT_DATA_UINT64
-            hash[knp[:name]] = knp[:value][:ui64]
+            hash[name] = knp[:value][:ui64]
           else
             "unknown"
         end
@@ -307,5 +312,6 @@ if $0 == __FILE__
   #pp Solaris::Kstat.new('cpu_info').record['cpu_info']
   #k = Solaris::Kstat.new('cpu', 0, 'sys')
   k = Solaris::Kstat.new('cpu', 0)
-  pp k.record
+  record = k.record
+  p record['cpu'][0]['vm']
 end
