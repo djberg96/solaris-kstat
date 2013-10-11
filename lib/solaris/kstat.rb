@@ -98,13 +98,13 @@ module Solaris
             when 0 # KSTAT_TYPE_RAW
               shash = map_raw_data_type(kstat)
             when 1 # KS_TYPE_NAMED
-              #shash = map_named_data_type(kstat)
+              shash = map_named_data_type(kstat)
             when 2 # KS_TYPE_INTR
-              #shash = map_intr_data_type(kstat)
+              shash = map_intr_data_type(kstat)
             when 3 # KS_TYPE_IO
-              #shash = map_io_data_type(kstat)
+              shash = map_io_data_type(kstat)
             when 4 # KS_TYPE_TIMER
-              #shash = map_timer_data_type
+              shash = map_timer_data_type(kstat)
             else
               raise ArgumentError, 'unknown data record type'
           end
@@ -150,11 +150,12 @@ module Solaris
     end
 
     def map_io_data_type(kstat)
-      num  = kstat[:ks_ndata]
+      #num  = kstat[:ks_ndata]
       hash = {}
 
-      0.upto(num){ |i|
-        kio = KstatIo.new(kstat[:ks_data] + (i * KstatIo.size))
+      #0.upto(num){ |i|
+        #kio = KstatIo.new(kstat[:ks_data] + (i * KstatIo.size))
+        kio = KstatIo.new(kstat[:ks_data])
         hash['nread']       = kio[:nread]
         hash['nwritten']    = kio[:nwritten]
         hash['reads']       = kio[:reads]
@@ -165,7 +166,7 @@ module Solaris
         hash['rtime']       = kio[:rtime]
         hash['rlentime']    = kio[:rlentime]
         hash['rlastupdate'] = kio[:rlastupdate]
-      }
+      #}
 
       hash
     end
@@ -201,7 +202,7 @@ module Solaris
       end
 
       if kstat[:ks_module].to_s == 'cpu_stat'
-        # hash = map_raw_cpu_sysinfo(kstat)
+        hash = map_raw_cpu_sysinfo(kstat)
       end
 
       if kstat[:ks_module].to_s == 'nfs'
@@ -209,6 +210,73 @@ module Solaris
           # hash = map_raw_mnt_info
         end
       end
+
+      hash
+    end
+
+    def map_raw_cpu_sysinfo(kstat)
+      hash = {}
+
+      info = CpuSysinfo.new(kstat[:ks_data])
+
+      hash['cpu_idle']        = info[:cpu][0]
+      hash['cpu_user']        = info[:cpu][1]
+      hash['cpu_kernel']      = info[:cpu][2]
+      hash['cpu_wait']        = info[:cpu][3]
+      hash['wait_io']         = info[:wait][0]
+      hash['wait_swap']       = info[:wait][1]
+      hash['wait_pio']        = info[:wait][2]
+      hash['bread']           = info[:bread]
+      hash['bwrite']          = info[:bwrite]
+      hash['lread']           = info[:lread]
+      hash['lwrite']          = info[:lwrite]
+      hash['phread']          = info[:phread]
+      hash['phwrite']         = info[:phwrite]
+      hash['pswitch']         = info[:pswitch]
+      hash['trap']            = info[:trap]
+      hash['intr']            = info[:intr]
+      hash['syscall']         = info[:syscall]
+      hash['sysread']         = info[:sysread]
+      hash['syswrite']        = info[:syswrite]
+      hash['sysfork']         = info[:sysfork]
+      hash['sysvfork']        = info[:sysvfork]
+      hash['sysexec']         = info[:sysexec]
+      hash['readch']          = info[:readch]
+      hash['writech']         = info[:writech]
+      hash['rcvint']          = info[:rcvint]
+      hash['xmtint']          = info[:xmtint]
+      hash['mdmint']          = info[:mdmint]
+      hash['rawch']           = info[:rawch]
+      hash['canch']           = info[:canch]
+      hash['outch']           = info[:outch]
+      hash['msg']             = info[:msg]
+      hash['sema']            = info[:sema]
+      hash['namei']           = info[:namei]
+      hash['ufsiget']         = info[:ufsiget]
+      hash['ufsdirblk']       = info[:ufsdirblk]
+      hash['ufsipage']        = info[:ufsipage]
+      hash['ufsinopage']      = info[:ufsinopage]
+      hash['inodeovf']        = info[:inodeovf]
+      hash['fileovf']         = info[:fileovf]
+      hash['procovf']         = info[:procovf]
+      hash['intrthread']      = info[:intrthread]
+      hash['intrblk']         = info[:intrblk]
+      hash['inv_switch']      = info[:inv_swtch]
+      hash['nthreads']        = info[:nthreads]
+      hash['cpumigrate']      = info[:cpumigrate]
+      hash['xcalls']          = info[:xcalls]
+      hash['mutex_adenters']  = info[:mutex_adenters]
+      hash['rw_rdfails']      = info[:rw_rdfails]
+      hash['rw_wrfails']      = info[:rw_wrfails]
+      hash['modload']         = info[:modload]
+      hash['modunload']       = info[:modunload]
+      hash['bawrite']         = info[:bawrite]
+      hash['rw_enters']       = info[:rw_enters]
+      hash['win_uo_cnt']      = info[:win_uo_cnt]
+      hash['win_uu_cnt']      = info[:win_uu_cnt]
+      hash['win_so_cnt']      = info[:win_so_cnt]
+      hash['win_su_cnt']      = info[:win_su_cnt]
+      hash['win_suo_cnt']     = info[:win_suo_cnt]
 
       hash
     end
@@ -341,7 +409,7 @@ if $0 == __FILE__
   #pp Solaris::Kstat.new('cpu_info').record['cpu_info']
   #k = Solaris::Kstat.new('cpu', 0, 'sys')
   #k = Solaris::Kstat.new('cpu')
-  k = Solaris::Kstat.new('unix', 0, 'vminfo')
+  k = Solaris::Kstat.new('cpu_stat', 0)
   record = k.record
   pp record
 end

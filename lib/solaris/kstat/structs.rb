@@ -174,8 +174,8 @@ module Solaris
 
     class CpuSysinfo < FFI::Struct
       layout(
-        :cpu, [:uint_t, 4],   # CPU_STATES = 4
-        :wait, [:uint_t, 3],  # W_STATES = 3
+        :cpu, [:uint_t, 4],
+        :wait, [:uint_t, 3],
         :bread, :uint_t,
         :bwrite, :uint_t,
         :lread, :uint_t,
@@ -193,9 +193,9 @@ module Solaris
         :sysexec, :uint_t,
         :readch, :uint_t,
         :writech, :uint_t,
-        :rcvint, :uint_t, # unused
-        :xmtint, :uint_t, # unused
-        :mdmint, :uint_t, # unused
+        :rcvint, :uint_t,
+        :xmtint, :uint_t,
+        :mdmint, :uint_t,
         :rawch, :uint_t,
         :canch, :uint_t,
         :outch, :uint_t,
@@ -207,7 +207,7 @@ module Solaris
         :ufsipage, :uint_t,
         :ufsinopage, :uint_t,
         :inodeovf, :uint_t,
-        :fileovf, :uint_t
+        :fileovf, :uint_t,
         :procovf, :uint_t,
         :intrthread, :uint_t,
         :intrblk, :uint_t,
@@ -220,7 +220,7 @@ module Solaris
         :rw_wrfails, :uint_t,
         :modload, :uint_t,
         :modunload, :uint_t,
-        :bawrite, :uint_t
+        :bawrite, :uint_t,
         :rw_enters, :uint_t,
         :win_uo_cnt, :uint_t,
         :win_uu_cnt, :uint_t,
