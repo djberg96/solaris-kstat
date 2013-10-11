@@ -171,5 +171,63 @@ module Solaris
         :stop_time, :long_long
       )
     end
+
+    class CpuSysinfo < FFI::Struct
+      layout(
+        :cpu, [:uint_t, 4],   # CPU_STATES = 4
+        :wait, [:uint_t, 3],  # W_STATES = 3
+        :bread, :uint_t,
+        :bwrite, :uint_t,
+        :lread, :uint_t,
+        :lwrite, :uint_t,
+        :phread, :uint_t,
+        :phwrite, :uint_t,
+        :pswitch, :uint_t,
+        :trap, :uint_t,
+        :intr, :uint_t,
+        :syscall, :uint_t,
+        :sysread, :uint_t,
+        :syswrite, :uint_t,
+        :sysfork, :uint_t,
+        :sysvfork, :uint_t,
+        :sysexec, :uint_t,
+        :readch, :uint_t,
+        :writech, :uint_t,
+        :rcvint, :uint_t, # unused
+        :xmtint, :uint_t, # unused
+        :mdmint, :uint_t, # unused
+        :rawch, :uint_t,
+        :canch, :uint_t,
+        :outch, :uint_t,
+        :msg, :uint_t,
+        :sema, :uint_t,
+        :namei, :uint_t,
+        :ufsiget, :uint_t,
+        :ufsdirblk, :uint_t,
+        :ufsipage, :uint_t,
+        :ufsinopage, :uint_t,
+        :inodeovf, :uint_t,
+        :fileovf, :uint_t
+        :procovf, :uint_t,
+        :intrthread, :uint_t,
+        :intrblk, :uint_t,
+        :inv_swtch, :uint_t,
+        :nthreads, :uint_t,
+        :cpumigrate, :uint_t,
+        :xcalls, :uint_t,
+        :mutex_adenters, :uint_t,
+        :rw_rdfails, :uint_t,
+        :rw_wrfails, :uint_t,
+        :modload, :uint_t,
+        :modunload, :uint_t,
+        :bawrite, :uint_t
+        :rw_enters, :uint_t,
+        :win_uo_cnt, :uint_t,
+        :win_uu_cnt, :uint_t,
+        :win_so_cnt, :uint_t,
+        :win_su_cnt, :uint_t,
+        :win_suo_cnt, :uint_t
+      )
+    end
   end
 end
