@@ -207,9 +207,26 @@ module Solaris
 
       if kstat[:ks_module].to_s == 'nfs'
         if kstat[:ks_name].to_s == 'mntinfo'
-          # hash = map_raw_mnt_info
+          hash = map_raw_mnt_info(kstat)
         end
       end
+
+      hash
+    end
+
+    def map_raw_mnt_info(kstat)
+      hash = {}
+
+      mntinfo = Mntinfo.new(kstat[:ks_data])
+
+      mntinfo.members.each{ |m|
+        next if m == :mik_timers # TODO: Add this information
+        if [:mik_proto, :mik_curserver].include?(m)
+          hash[m.to_s] = mntinfo[m].to_s
+        else
+          hash[m.to_s] = mntinfo[m]
+        end
+      }
 
       hash
     end
@@ -409,7 +426,8 @@ if $0 == __FILE__
   #pp Solaris::Kstat.new('cpu_info').record['cpu_info']
   #k = Solaris::Kstat.new('cpu', 0, 'sys')
   #k = Solaris::Kstat.new('cpu')
-  k = Solaris::Kstat.new('cpu_stat', 0)
+  #k = Solaris::Kstat.new('cpu_stat', 0)
+  k = Solaris::Kstat.new('nfs', -1, 'mntinfo')
   record = k.record
   pp record
 end

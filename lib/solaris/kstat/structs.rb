@@ -229,5 +229,31 @@ module Solaris
         :win_suo_cnt, :uint_t
       )
     end
+
+    class MikStruct < FFI::Struct
+      layout(:srtt, :uint32_t, :deviate, :uint32_t, :rtxcur, :uint32_t)
+    end
+
+    class Mntinfo < FFI::Struct
+      layout(
+        :mik_proto, [:char, 128],
+        :mik_vers, :uint32_t,
+        :mik_flags, :uint_t,
+        :mik_secmod, :uint_t,
+        :mik_curread, :uint32_t,
+        :mik_curwrite, :uint32_t,
+        :mik_timeo, :int,
+        :mik_retrans, :int,
+        :mik_acregmin, :uint_t,
+        :mik_acregmax, :uint_t,
+        :mik_acdirmin, :uint_t,
+        :mik_acdirmax, :uint_t,
+        :mik_timers, [MikStruct, 4],
+        :mik_noresponse, :uint32_t,
+        :mik_failover, :uint32_t,
+        :mik_remap, :uint32_t,
+        :mik_curserver, [:char, 257]
+      )
+    end
   end
 end
