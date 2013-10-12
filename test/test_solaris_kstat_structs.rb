@@ -53,4 +53,8 @@ class StructTest < Test::Unit::TestCase
   test "CpuSysinfo struct is the proper size" do
     assert_equal(CpuSysinfo.size, check_sizeof('cpu_sysinfo_t', 'sys/sysinfo.h'))
   end
+
+  #test "Mntinfo struct is the proper size" do
+  #  assert_equal(Mntinfo.size, check_sizeof('struct mntinfo_kstat', 'nfs/nfs_clnt.h'))
+  #end
 end
