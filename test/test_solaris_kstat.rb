@@ -92,7 +92,7 @@ class TC_Solaris_Kstat < Test::Unit::TestCase
 
   test "record method basic functionality" do
     assert_respond_to(@kstat, :record)
-    #assert_nothing_raised{ @kstat.record }
+    assert_nothing_raised{ @kstat.record }
   end
 
   test "named record works as expected" do
@@ -100,25 +100,25 @@ class TC_Solaris_Kstat < Test::Unit::TestCase
     assert_kind_of(Hash, @kstat.record['cpu_info'][0]['cpu_info0'])
   end
 
-=begin
-  def test_record_io
+  test "io record works as expected" do
     assert_nothing_raised{ @kstat.record['nfs'][1]['nfs1'] }
     assert_kind_of(Hash, @kstat.record['nfs'][1]['nfs1'])
   end
 
-  def test_record_intr
+  test "intr record works as expected" do
     assert_nothing_raised{ @kstat.record['fd'][0]['fd0'] }
     assert_kind_of(Hash, @kstat.record['fd'][0]['fd0'])
   end
 
-  def test_record_raw_vminfo
-    keys = %w[class freemem swap_alloc swap_avail swap_free swap_resv]
+  test "raw vminfo record works as expected" do
+    keys = %w[class freemem swap_alloc swap_avail swap_free swap_resv updates]
 
     assert_nothing_raised{ @kstat.record['unix'][0]['vminfo'] }
     assert_kind_of(Hash, @kstat.record['unix'][0]['vminfo'])
     assert_equal(keys, @kstat.record['unix'][0]['vminfo'].keys.sort)
   end
 
+=begin
   def test_record_raw_var
     keys = %w[
       class v_autoup v_buf v_bufhwm v_call v_clist v_hbuf v_hmask
