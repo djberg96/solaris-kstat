@@ -131,42 +131,26 @@ module Solaris
     private
 
     def map_timer_data_type(kstat)
-      num  = kstat[:ks_ndata]
       hash = {}
 
-      0.upto(num){ |i|
-        ktimer = KstatTimer.new(kstat[:ks_data] + (i * KstatTimer.size))
-        hash['name']         = ktimer[:name].to_s
-        hash['resv']         = ktimer[:resv]
-        hash['num_events']   = ktimer[:num_events]
-        hash['elapsed_time'] = ktimer[:elapsed_time]
-        hash['min_time']     = ktimer[:min_time]
-        hash['max_time']     = ktimer[:max_time]
-        hash['start_time']   = ktimer[:start_time]
-        hash['stop_time']    = ktimer[:stop_time]
+      ktimer = KstatTimer.new(kstat[:ks_data])
+
+      ktime.members.each{ |m|
+        if m == :name
+          hash['name'] = ktimer[:name].to_s
+        else
+          hash[m.to_s] = ktimer[m]
+        end
       }
 
       hash
     end
 
     def map_io_data_type(kstat)
-      #num  = kstat[:ks_ndata]
       hash = {}
 
-      #0.upto(num){ |i|
-        #kio = KstatIo.new(kstat[:ks_data] + (i * KstatIo.size))
-        kio = KstatIo.new(kstat[:ks_data])
-        hash['nread']       = kio[:nread]
-        hash['nwritten']    = kio[:nwritten]
-        hash['reads']       = kio[:reads]
-        hash['writes']      = kio[:writes]
-        hash['wtime']       = kio[:wtime]
-        hash['wlentime']    = kio[:wlentime]
-        hash['wlastupdate'] = kio[:wlastupdate]
-        hash['rtime']       = kio[:rtime]
-        hash['rlentime']    = kio[:rlentime]
-        hash['rlastupdate'] = kio[:rlastupdate]
-      #}
+      kio = KstatIo.new(kstat[:ks_data])
+      kio.members.each{ |m| hash[m.to_s] = kio[m] }
 
       hash
     end
@@ -236,64 +220,20 @@ module Solaris
 
       info = CpuSysinfo.new(kstat[:ks_data])
 
-      hash['cpu_idle']        = info[:cpu][0]
-      hash['cpu_user']        = info[:cpu][1]
-      hash['cpu_kernel']      = info[:cpu][2]
-      hash['cpu_wait']        = info[:cpu][3]
-      hash['wait_io']         = info[:wait][0]
-      hash['wait_swap']       = info[:wait][1]
-      hash['wait_pio']        = info[:wait][2]
-      hash['bread']           = info[:bread]
-      hash['bwrite']          = info[:bwrite]
-      hash['lread']           = info[:lread]
-      hash['lwrite']          = info[:lwrite]
-      hash['phread']          = info[:phread]
-      hash['phwrite']         = info[:phwrite]
-      hash['pswitch']         = info[:pswitch]
-      hash['trap']            = info[:trap]
-      hash['intr']            = info[:intr]
-      hash['syscall']         = info[:syscall]
-      hash['sysread']         = info[:sysread]
-      hash['syswrite']        = info[:syswrite]
-      hash['sysfork']         = info[:sysfork]
-      hash['sysvfork']        = info[:sysvfork]
-      hash['sysexec']         = info[:sysexec]
-      hash['readch']          = info[:readch]
-      hash['writech']         = info[:writech]
-      hash['rcvint']          = info[:rcvint]
-      hash['xmtint']          = info[:xmtint]
-      hash['mdmint']          = info[:mdmint]
-      hash['rawch']           = info[:rawch]
-      hash['canch']           = info[:canch]
-      hash['outch']           = info[:outch]
-      hash['msg']             = info[:msg]
-      hash['sema']            = info[:sema]
-      hash['namei']           = info[:namei]
-      hash['ufsiget']         = info[:ufsiget]
-      hash['ufsdirblk']       = info[:ufsdirblk]
-      hash['ufsipage']        = info[:ufsipage]
-      hash['ufsinopage']      = info[:ufsinopage]
-      hash['inodeovf']        = info[:inodeovf]
-      hash['fileovf']         = info[:fileovf]
-      hash['procovf']         = info[:procovf]
-      hash['intrthread']      = info[:intrthread]
-      hash['intrblk']         = info[:intrblk]
-      hash['inv_switch']      = info[:inv_swtch]
-      hash['nthreads']        = info[:nthreads]
-      hash['cpumigrate']      = info[:cpumigrate]
-      hash['xcalls']          = info[:xcalls]
-      hash['mutex_adenters']  = info[:mutex_adenters]
-      hash['rw_rdfails']      = info[:rw_rdfails]
-      hash['rw_wrfails']      = info[:rw_wrfails]
-      hash['modload']         = info[:modload]
-      hash['modunload']       = info[:modunload]
-      hash['bawrite']         = info[:bawrite]
-      hash['rw_enters']       = info[:rw_enters]
-      hash['win_uo_cnt']      = info[:win_uo_cnt]
-      hash['win_uu_cnt']      = info[:win_uu_cnt]
-      hash['win_so_cnt']      = info[:win_so_cnt]
-      hash['win_su_cnt']      = info[:win_su_cnt]
-      hash['win_suo_cnt']     = info[:win_suo_cnt]
+      info.members.each{ |m|
+        if m == :cpu
+          hash['cpu_idle']   = info[:cpu][0]
+          hash['cpu_user']   = info[:cpu][1]
+          hash['cpu_kernel'] = info[:cpu][2]
+          hash['cpu_wait']   = info[:cpu][3]
+        elsif m == :wait
+          hash['wait_io']   = info[:wait][0]
+          hash['wait_swap'] = info[:wait][1]
+          hash['wait_pio']  = info[:wait][2]
+        else
+          hash[m.to_s] = info[m]
+        end
+      }
 
       hash
     end
@@ -302,98 +242,50 @@ module Solaris
       hash = {}
 
       vmi = Vminfo.new(kstat[:ks_data])
-
-      hash['freemem']    = vmi[:freemem]
-      hash['swap_resv']  = vmi[:swap_resv]
-      hash['swap_alloc'] = vmi[:swap_alloc]
-      hash['swap_avail'] = vmi[:swap_avail]
-      hash['swap_free']  = vmi[:swap_free]
-      hash['updates']    = vmi[:updates]
+      vmi.members.each{ |m| hash[m.to_s] = vmi[m] }
 
       hash
     end
 
     def map_raw_flushmeter(kstat)
-      num  = kstat[:ks_ndata]
       hash = {}
 
-      0.upto(num){ |i|
-        fm = Flushmeter.new(kstat[:ks_data] + (i * Flushmeter.size))
-        hash['f_ctx']     = fm[:f_ctx]
-        hash['f_segment'] = fm[:f_segment]
-        hash['f_page']    = fm[:f_page]
-        hash['f_partial'] = fm[:f_partial]
-        hash['f_usr']     = fm[:f_usr]
-        hash['f_region']  = fm[:f_region]
-      }
+      fm = Flushmeter.new(kstat[:ks_data])
+      fm.members.each{ |m| hash[m.to_s] = fm[m] }
 
       hash
     end
 
     def map_raw_ncstats(kstat)
-      num  = kstat[:ks_ndata]
       hash = {}
 
-      0.upto(num){ |i|
-        ncs = NcStats.new(kstat[:ks_data] + (i * NcStats.size))
-        hash['hits']          = ncs[:hits]
-        hash['misses']        = ncs[:misses]
-        hash['enters']        = ncs[:enters]
-        hash['dbl_enters']    = ncs[:dbl_enters]
-        hash['long_enter']    = ncs[:long_enter]
-        hash['long_look']     = ncs[:long_look]
-        hash['move_to_front'] = ncs[:move_to_front]
-        hash['purges']        = ncs[:purges]
-      }
+      ncs = NcStats.new(kstat[:ks_data])
+      ncs.members.each{ |m| hash[m.to_s] = ncs[m] }
 
       hash
     end
 
     def map_raw_sysinfo(kstat)
-      num  = kstat[:ks_ndata]
       hash = {}
 
-      0.upto(num){ |i|
-        sys = Sysinfo.new(kstat[:ks_data] + (i * Sysinfo.size))
-        hash['updates'] = sys[:updates]
-        hash['runque']  = sys[:runque]
-        hash['runocc']  = sys[:runocc]
-        hash['swpque']  = sys[:swpque]
-        hash['swpocc']  = sys[:swpocc]
-        hash['waiting'] = sys[:waiting]
-      }
+      sys = Sysinfo.new(kstat[:ks_data])
+      sys.members.each{ |m| hash[m.to_s] = sys[m] }
 
       hash
     end
 
     def map_raw_var(kstat)
-      num  = kstat[:ks_ndata]
       hash = {}
 
-      0.upto(num){ |i|
-        var = Var.new(kstat[:ks_data] + (i * Var.size))
-        hash['v_buf']       = var[:v_buf]
-        hash['v_call']      = var[:v_call]
-        hash['v_proc']      = var[:v_proc]
-        hash['v_maxupttl']  = var[:v_maxupttl]
-        hash['v_nglobpris'] = var[:v_nglobpris]
-        hash['v_maxsyspri'] = var[:v_maxsyspri]
-        hash['v_clist']     = var[:v_clist]
-        hash['v_maxup']     = var[:v_maxup]
-        hash['v_hbuf']      = var[:v_hbuf]
-        hash['v_hmask']     = var[:v_hmask]
-        hash['v_pbuf']      = var[:v_pbuf]
-        hash['v_sptmap']    = var[:v_sptmap]
-        hash['v_maxpmem']   = var[:v_maxpmem]
-        hash['v_autoup']    = var[:v_autoup]
-        hash['v_bufhwm']    = var[:v_bufhwm]
-      }
+      var = Var.new(kstat[:ks_data])
+      var.members.each{ |m| hash[m.to_s] = var[m] }
 
       hash
     end
 
+    # TODO: Picking up a bogus key here somehow in some cases.
     def map_named_data_type(kstat)
-      num  = kstat[:ks_ndata]
+      num = kstat[:ks_ndata]
       hash = {}
 
       0.upto(num){ |i|
@@ -412,7 +304,7 @@ module Solaris
           when 4 # KSTAT_DATA_UINT64
             hash[name] = knp[:value][:ui64]
           else
-            "unknown"
+            hash[name] = "unknown"
         end
       }
 
@@ -425,9 +317,9 @@ if $0 == __FILE__
   require 'pp'
   #pp Solaris::Kstat.new('cpu_info').record['cpu_info']
   #k = Solaris::Kstat.new('cpu', 0, 'sys')
-  #k = Solaris::Kstat.new('cpu')
+  k = Solaris::Kstat.new('cpu')
   #k = Solaris::Kstat.new('cpu_stat', 0)
-  k = Solaris::Kstat.new('nfs', -1, 'mntinfo')
+  #k = Solaris::Kstat.new('nfs', -1, 'mntinfo')
   record = k.record
-  pp record
+  #pp record
 end
