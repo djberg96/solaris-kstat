@@ -211,6 +211,7 @@ module Solaris
         :procovf, :uint_t,
         :intrthread, :uint_t,
         :intrblk, :uint_t,
+        :idlethread, :uint_t,
         :inv_swtch, :uint_t,
         :nthreads, :uint_t,
         :cpumigrate, :uint_t,
