@@ -37,27 +37,27 @@ module Solaris
 
     class Addr < FFI::Union
       layout(
-        :ptr, :char,
-        :ptr32, :int32,
+        :ptr, :pointer,
+        :ptr32, :int32_t,
         :pad, [:char, 8]
       )
     end
 
     class Str < FFI::Struct
-      layout(:union, Addr, :len, :uint32)
+      layout(:union, Addr, :len, :uint32_t)
     end
 
     class Value < FFI::Union
       layout(
         :c, [:char, 16],
-        :i32, :int32,
-        :ui32, :uint32,
+        :i32, :int32_t,
+        :ui32, :uint32_t,
         :str, Str,
-        :i64, :int64,
-        :ui64, :uint64,
+        :i64, :int64_t,
+        :ui64, :uint64_t,
         :l, :long,
-        :ul, :ulong,
-        :ll, :long_long,
+        :ul, :ulong_t,
+        :ll, :longlong_t,
         :ull, :ulong_long,
         :f, :float,
         :d, :double
@@ -67,7 +67,7 @@ module Solaris
     class KstatNamed < FFI::Struct
       layout(
         :name, [:char, 31],
-        :data_type, :uchar,
+        :data_type, :uchar_t,
         :value, Value
       )
     end
