@@ -283,18 +283,17 @@ module Solaris
       hash
     end
 
-    # TODO: Picking up a bogus key here somehow in some cases.
     def map_named_data_type(kstat)
       num = kstat[:ks_ndata]
       hash = {}
 
-      0.upto(num){ |i|
+      0.upto(num-1){ |i|
         knp = KstatNamed.new(kstat[:ks_data] + (i * KstatNamed.size))
         name = knp[:name].to_s
 
         case knp[:data_type]
           when 0 # KSTAT_DATA_CHAR
-            hash[name] = knp[:value][:c]
+            hash[name] = knp[:value][:c].to_s
           when 1 # KSTAT_DATA_INT32
             hash[name] = knp[:value][:i32]
           when 2 # KSTAT_DATA_UINT32
@@ -317,9 +316,9 @@ if $0 == __FILE__
   require 'pp'
   #pp Solaris::Kstat.new('cpu_info').record['cpu_info']
   #k = Solaris::Kstat.new('cpu', 0, 'sys')
-  k = Solaris::Kstat.new('cpu')
+  k = Solaris::Kstat.new('cpu', 1, 'intrstat')
   #k = Solaris::Kstat.new('cpu_stat', 0)
   #k = Solaris::Kstat.new('nfs', -1, 'mntinfo')
   record = k.record
-  #pp record
+  pp record
 end
