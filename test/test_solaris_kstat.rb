@@ -6,7 +6,6 @@
 ###############################################################################
 require 'solaris/kstat'
 require 'test-unit'
-require 'set'
 include Solaris
 
 class TC_Solaris_Kstat < Test::Unit::TestCase
@@ -110,7 +109,7 @@ class TC_Solaris_Kstat < Test::Unit::TestCase
     assert_kind_of(Hash, @kstat.record['fd'][0]['fd0'])
   end
 
-  test "raw vminfo record works as expected" do
+  test "raw vminfo record returns expected values" do
     keys = %w[class freemem swap_alloc swap_avail swap_free swap_resv updates]
 
     assert_nothing_raised{ @kstat.record['unix'][0]['vminfo'] }
@@ -118,8 +117,7 @@ class TC_Solaris_Kstat < Test::Unit::TestCase
     assert_equal(keys, @kstat.record['unix'][0]['vminfo'].keys.sort)
   end
 
-=begin
-  def test_record_raw_var
+  test "raw var record returns expected values" do
     keys = %w[
       class v_autoup v_buf v_bufhwm v_call v_clist v_hbuf v_hmask
       v_maxpmem v_maxsyspri v_maxup v_maxupttl v_nglobpris v_pbuf
@@ -131,7 +129,7 @@ class TC_Solaris_Kstat < Test::Unit::TestCase
     assert_equal(keys,  @kstat.record['unix'][0]['var'].keys.sort)
   end
 
-  def test_record_raw_biostats
+  test "raw biostats returns expected values" do
     keys = %w[
       buffer_cache_hits
       buffer_cache_lookups
@@ -147,7 +145,7 @@ class TC_Solaris_Kstat < Test::Unit::TestCase
     assert_equal(keys,  @kstat.record['unix'][0]['biostats'].keys.sort)
   end
 
-  def test_record_raw_cpu_stat
+  test "raw cpu_stat returns expected values" do
     keys = %w[
       class cpu_idle cpu_user cpu_kernel cpu_wait wait_io wait_swap
       wait_pio bread bwrite lread lwrite phread phwrite pswitch
@@ -156,21 +154,19 @@ class TC_Solaris_Kstat < Test::Unit::TestCase
       sema namei ufsiget ufsdirblk ufsipage ufsinopage inodeovf
       fileovf procovf intrthread intrblk idlethread inv_swtch
       nthreads cpumigrate xcalls mutex_adenters rw_rdfails
-      rw_wrfails modload modunload bawrite
+      rw_wrfails modload modunload bawrite win_so_cnt win_su_cnt
+      win_suo_cnt win_uo_cnt win_uu_cnt rw_enters
     ]
 
     assert_nothing_raised{ @kstat.record['cpu_stat'][0]['cpu_stat0'] }
     assert_kind_of(Hash, @kstat.record['cpu_stat'][0]['cpu_stat0'])
 
-    # Too big and difficult to sort manually - so use a Set
-    set1 = Set.new(keys)
-    set2 = Set.new(@kstat.record['cpu_stat'][0]['cpu_stat0'].keys)
-    diff = set1 - set2
-
-    assert_equal(set1,set2,'Diff was: #{diff.to_a}')
+    set1 = keys.sort
+    set2 = @kstat.record['cpu_stat'][0]['cpu_stat0'].keys.sort
+    assert_equal(set1, set2)
   end
 
-  def test_record_ncstats
+  test "ncstats returns expected values" do
     keys = %w[
       class
       dbl_enters
@@ -187,7 +183,7 @@ class TC_Solaris_Kstat < Test::Unit::TestCase
     assert_equal(keys, @kstat.record['unix'][0]['ncstats'].keys.sort)
   end
 
-  def test_record_sysinfo
+  test "sysinfo works as expected" do
     keys = %w[class runocc runque swpocc swpque updates waiting]
 
     assert_nothing_raised{ @kstat.record['unix'][0]['sysinfo'] }
@@ -195,10 +191,9 @@ class TC_Solaris_Kstat < Test::Unit::TestCase
     assert_equal(keys, @kstat.record['unix'][0]['sysinfo'].keys.sort)
   end
 
-  def test_class_set
+  test "class key is set to expected value" do
     assert_equal("misc", @kstat.record['unix'][0]['sysinfo']['class'])
   end
-=end
 
   def teardown
     @kstat = nil
