@@ -1,31 +1,31 @@
 == Description
-   A Ruby interface for the Solaris kstat library.
+  A Ruby interface for the Solaris kstat library.
    
 == Prerequisites
-   Solaris 8 (SunOS 2.8) or later.
+  Solaris 8 (SunOS 2.8) or later.
 
 == Installation
-   gem install solaris-kstat
+  gem install solaris-kstat
 
 == Synopsis
-   require 'solaris/kstat'
-   require 'pp'
-   include Solaris
+  require 'solaris/kstat'
+  require 'pp'
+  include Solaris
 
-   k = Kstat.new('cpu_info', 0, 'cpu_info0')
-   pp k.record
+  k = Kstat.new('cpu_info', 0, 'cpu_info0')
+  pp k.record
 
-   {'cpu_info'=>
-      {0=>
-      {'cpu_info0'=>
-         {'chip_id'=>0,
-          'fpu_type'=>'sparcv9',
-          'device_ID'=>0,
-          'cpu_type'=>'sparcv9',
-          'implementation'=>'Unknown',
-          'clock_MHz'=>502,
-          'state_begin'=>1105974702,
-          'state'=>'on-line'}}}}
+  {'cpu_info'=>
+    {0=>
+    {'cpu_info0'=>
+      {'chip_id'=>0,
+       'fpu_type'=>'sparcv9',
+       'device_ID'=>0,
+       'cpu_type'=>'sparcv9',
+       'implementation'=>'Unknown',
+       'clock_MHz'=>502,
+       'state_begin'=>1105974702,
+       'state'=>'on-line'}}}}
    
 == Class Methods
 Kstat.new(module=nil, instance=-1, name=nil)
@@ -43,53 +43,48 @@ Kstat#record
    deeply that hash is nested depends on the values passed to the constructor.
    The more specific your criterion, the less data you will receive.
 
-== Error Classes
-Kstat::Error < StandardError
-   Raised if anything goes wrong. Typically this will only occur if you
-   pass bad arguments to the constructor e.g. a module name that doesn't
-   exist, etc.
-   
 == Unsupported names
-   The following names will not return any meaningful value:
+  The following names will not return any meaningful value:
 
-   * kstat_headers
-   * sfmmu_global_stat
-   * sfmmu_percpu_stat
+  * kstat_headers
+  * sfmmu_global_stat
+  * sfmmu_percpu_stat
    
-== Known Bugs
-   You may receive a couple warnings during the build process. You
-   can ignore these.
+== Known Issues
+  None at this time. Please report any issues on the project page at
+  https://github.com/djberg96/solaris-kstat
 
 == Designer's Notes
-   I have noticed that results from the cpu_stat module differ from the output
-   of the 'kstat' command line tool. I am convinced that my code is correct and
-   that there is a bug in the Solaris::Kstat Perl module. Unfortunately, the
-   source for the version of the Solaris::Kstat Perl module that works on
-   Solaris 8 and later is not available (the version on CPAN only works on
-   Solaris 6 and 7).
+  I have noticed that results from the cpu_stat module differ from the output
+  of the 'kstat' command line tool. I am convinced that my code is correct and
+  that there is a bug in the Solaris::Kstat Perl module. Unfortunately, the
+  source for the version of the Solaris::Kstat Perl module that works on
+  Solaris 8 and later is not available (the version on CPAN only works on
+  Solaris 6 and 7).
 
-   See http://tinyurl.com/karxw for more details.
+  See http://tinyurl.com/karxw for more details.
    
 == Acknowledgements
-   Thanks go to Charlie Mills for help with the 'volatile' issue.
+  Thanks go to Charlie Mills for help with the 'volatile' issue for the
+  original C code.
 
 == Future Plans
-   Add snaptime and crtime information to the statistics hash.
+  Add snaptime and crtime information to the statistics hash.
    
 == License
-   Artistic 2.0
+  Artistic 2.0
 
 == Copyright
-   (C) 2003-2011 Daniel J. Berger
-   All Rights Reserved
+  (C) 2003-2013 Daniel J. Berger
+  All Rights Reserved
     
 == Warranty
-   This package is provided "as is" and without any express or
-   implied warranties, including, without limitation, the implied
-   warranties of merchantability and fitness for a particular purpose.
+  This package is provided "as is" and without any express or
+  implied warranties, including, without limitation, the implied
+  warranties of merchantability and fitness for a particular purpose.
 	 
 == Author
-   Daniel J. Berger
+  Daniel J. Berger
     
 == See Also
-   kstat(1M)
+  kstat(1M)
