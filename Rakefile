@@ -34,9 +34,26 @@ task :example => [:build] do
   ruby "-Iext examples/example_kstat.rb"
 end
 
-Rake::TestTask.new do |t|
-  t.verbose = true
-  t.warning = true
+namespace :test do
+  desc "Run base tests"
+  Rake::TestTask.new(:base) do |t|
+    t.test_files = FileList['test/test_solaris_kstat.rb']
+    t.verbose = true
+    t.warning = true
+  end
+
+  desc "Run FFI struct tests"
+  Rake::TestTask.new(:structs) do |t|
+    t.test_files = FileList['test/test_solaris_kstat_structs.rb']
+    t.verbose = true
+    t.warning = true
+  end
+
+  desc "Run all tests"
+  Rake::TestTask.new(:all) do |t|
+    t.verbose = true
+    t.warning = true
+  end
 end
 
-task :default => :test
+task :default => "test:all"
