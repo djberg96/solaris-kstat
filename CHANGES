@@ -1,3 +1,6 @@
+== 1.1.0 - 13-Oct-2013
+* Converted code to use FFI.
+
 == 1.0.3 - 30-Jul-2011
 * Added test-unit as a development dependency.
 * Fixed a switch statement bug (missing break).
