@@ -12,5 +12,11 @@ module Solaris
     attach_function :kstat_lookup, [KstatCtl, :string, :int, :string], KstatStruct.by_ref
     attach_function :kstat_open, [], KstatCtl.by_ref
     attach_function :kstat_read, [KstatCtl, KstatStruct, :pointer], :int
+
+    private :kstat_chain_update
+    private :kstat_close
+    private :kstat_lookup
+    private :kstat_open
+    private :kstat_read
   end
 end

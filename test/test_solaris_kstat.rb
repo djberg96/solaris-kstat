@@ -1,9 +1,9 @@
-###############################################################################
+########################################################################
 # test_solaris_kstat.rb
 #
-# Test suite for the solaris-kstat Ruby library. You should run this via
-# the 'rake test' task.
-###############################################################################
+# Test suite for the solaris-kstat Ruby library. You should run this
+# via the 'rake test' task.
+########################################################################
 require 'solaris/kstat'
 require 'test-unit'
 include Solaris
@@ -193,6 +193,10 @@ class TC_Solaris_Kstat < Test::Unit::TestCase
 
   test "class key is set to expected value" do
     assert_equal("misc", @kstat.record['unix'][0]['sysinfo']['class'])
+  end
+
+  test "ffi functions are private" do
+    assert_not_respond_to(Kstat, :kstat_open)
   end
 
   def teardown
