@@ -30,8 +30,8 @@ namespace :gem do
 end
 
 desc "Run the example program"
-task :example => [:build] do
-  ruby "-Iext examples/example_kstat.rb"
+task :example do
+  ruby "-Ilib examples/example_kstat.rb"
 end
 
 namespace :test do
