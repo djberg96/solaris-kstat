@@ -6,9 +6,9 @@ Gem::Specification.new do |spec|
   spec.author     = 'Daniel J. Berger'
   spec.license    = 'Artistic 2.0'
   spec.email      = 'djberg96@gmail.com'
-  spec.homepage   = 'http://www.rubyforge.org/projects/solarisutils'
+  spec.homepage   = 'https://github.com/djberg96/solaris-kstat'
   spec.summary    = 'Interface for the Solaris kstat library'
-  spec.test_file  = 'test/test_solaris_kstat.rb'
+  spec.test_files = Dir['test/*.rb']
   spec.files      = Dir['**/*'].reject{ |f| f.include?('git') }
 
   spec.rubyforge_project = 'solarisutils'
