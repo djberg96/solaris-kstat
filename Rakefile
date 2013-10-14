@@ -22,7 +22,7 @@ namespace :gem do
   end
 
   desc "Install the solaris-kstat gem"
-  task :install do
+  task :install => [:create] do
     ruby 'solaris-kstat.gemspec'
     file = Dir["*.gem"].first
     sh "gem install #{file}"
