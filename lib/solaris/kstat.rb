@@ -10,8 +10,13 @@ module Solaris
     # The version of the solaris-kstat library
     VERSION = '1.1.0'
 
+    # The kstat module
     attr_accessor :module
+
+    # The kstat instance number
     attr_accessor :instance
+
+    # The kstat name
     attr_accessor :name
 
     # Creates and returns a Kstat object. This does NOT traverse the kstat
@@ -108,6 +113,9 @@ module Solaris
             else
               raise ArgumentError, 'unknown data record type'
           end
+
+          # The various calls to .to_s here and elsewhere are necessary
+          # to convert FFI's CharArray to Ruby strings.
 
           shash['class'] = kstat[:ks_class].to_s
 
@@ -311,14 +319,3 @@ module Solaris
     end
   end # Kstat
 end # Solaris
-
-if $0 == __FILE__
-  require 'pp'
-  #pp Solaris::Kstat.new('cpu_info').record['cpu_info']
-  #k = Solaris::Kstat.new('cpu', 0, 'sys')
-  k = Solaris::Kstat.new('cpu', 1, 'intrstat')
-  #k = Solaris::Kstat.new('cpu_stat', 0)
-  #k = Solaris::Kstat.new('nfs', -1, 'mntinfo')
-  record = k.record
-  pp record
-end
