@@ -75,8 +75,14 @@ Kstat#record
   Artistic 2.0
 
 == Copyright
-  (C) 2003-2013 Daniel J. Berger
+  (C) 2003-2014 Daniel J. Berger
   All Rights Reserved
+
+== Contributions
+  Although this library is free, please consider having your company
+  setup a gittip if used by your company professionally.
+
+  http://www.gittip.com/djberg96/
     
 == Warranty
   This package is provided "as is" and without any express or
