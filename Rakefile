@@ -25,7 +25,7 @@ namespace :gem do
   task :install => [:create] do
     ruby 'solaris-kstat.gemspec'
     file = Dir["*.gem"].first
-    sh "gem install #{file}"
+    sh "gem install -l #{file}"
   end
 end
 
