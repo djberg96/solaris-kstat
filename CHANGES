@@ -1,3 +1,7 @@
+== 1.1.1 - 2-Nov-2014
+* Use relative_require instead of manual method.
+* Minor updates to the Rakefile and gemspec.
+
 == 1.1.0 - 13-Oct-2013
 * Converted code to use FFI.
 * The Kstat::Error subclass was removed. Any internal FFI
