@@ -2,7 +2,7 @@ require 'rubygems'
 
 Gem::Specification.new do |spec|
   spec.name       = 'solaris-kstat'
-  spec.version    = '1.1.0'
+  spec.version    = '1.1.1'
   spec.author     = 'Daniel J. Berger'
   spec.license    = 'Artistic 2.0'
   spec.email      = 'djberg96@gmail.com'
@@ -10,8 +10,6 @@ Gem::Specification.new do |spec|
   spec.summary    = 'Interface for the Solaris kstat library'
   spec.test_files = Dir['test/*.rb']
   spec.files      = Dir['**/*'].reject{ |f| f.include?('git') }
-
-  spec.rubyforge_project = 'solarisutils'
 
   spec.add_dependency('ffi')
 
