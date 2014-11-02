@@ -1,5 +1,5 @@
-require File.join(File.dirname(__FILE__), 'kstat', 'structs')
-require File.join(File.dirname(__FILE__), 'kstat', 'functions')
+require_relative 'kstat/structs'
+require_relative 'kstat/functions'
 
 module Solaris
   class Kstat
@@ -8,7 +8,7 @@ module Solaris
     include Solaris::Functions
 
     # The version of the solaris-kstat library
-    VERSION = '1.1.0'
+    VERSION = '1.1.1'
 
     # The kstat module
     attr_accessor :module
