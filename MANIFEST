@@ -4,6 +4,8 @@
 * Rakefile
 * solaris-kstat.gemspec
 * examples/example_kstat.rb
+* certs/djberg96_pub.pem
+* lib/solaris-kstat.rb
 * lib/solaris/kstat.rb
 * lib/solaris/kstat/structs.rb
 * lib/solaris/kstat/functions.rb
