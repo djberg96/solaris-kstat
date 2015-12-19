@@ -1,3 +1,8 @@
+== 1.1.2 - 18-Dec-2015
+* This gem is now signed.
+* The Rakefile now assumes Rubygems 2.x for gem related tasks.
+* Added a solaris-kstat.rb file for convenience.
+
 == 1.1.1 - 2-Nov-2014
 * Use relative_require instead of manual method.
 * Minor updates to the Rakefile and gemspec.
