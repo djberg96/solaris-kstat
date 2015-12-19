@@ -14,7 +14,7 @@ class TC_Solaris_Kstat < Test::Unit::TestCase
   end
 
   test "version number is set to the expected value" do
-    assert_equal('1.1.1', Kstat::VERSION)
+    assert_equal('1.1.2', Kstat::VERSION)
   end
 
   test "name method basic functionality" do

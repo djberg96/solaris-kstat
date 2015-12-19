@@ -8,7 +8,7 @@ module Solaris
     include Solaris::Functions
 
     # The version of the solaris-kstat library
-    VERSION = '1.1.1'
+    VERSION = '1.1.2'
 
     # The kstat module
     attr_accessor :module
