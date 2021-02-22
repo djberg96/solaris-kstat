@@ -1,6 +1,6 @@
-* CHANGES
-* MANIFEST
-* README
+* CHANGES.md
+* MANIFEST.md
+* README.md
 * Rakefile
 * solaris-kstat.gemspec
 * examples/example_kstat.rb
